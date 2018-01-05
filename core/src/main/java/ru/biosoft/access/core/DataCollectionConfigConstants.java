@@ -138,4 +138,7 @@ public class DataCollectionConfigConstants
     public static final String CAN_OPEN_AS_TABLE = "openAsTable";
 
     public static final String JOB_CONTROL_PROPERTY = "job-control";
+
+    // TODO remove ?
+    public static final String DATA_COLLECTION_LISTENER = "data-collection-listener";
 }

@@ -1,5 +1,7 @@
 package ru.biosoft.access.core;
 
+import java.util.Map;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -8,6 +10,10 @@ import ru.biosoft.exception.LoggedClassNotFoundException;
 
 public class Environment 
 {
+	////////////////////////////////////////////////////////////////////////////
+	// Classes and resources loading
+	//
+	
 	private static ClassLoading classLoading;
 	public static ClassLoading getClassLoading()
 	{
@@ -44,5 +50,40 @@ public class Environment
     {
     	return classLoading.getResourceLocation(clazz, resource);
     }
+
+	////////////////////////////////////////////////////////////////////////////
+	// Extension registry
+	//
+
+    // TODO - check whether it is used
     
+    private static Map<String, Class<? extends DataCollectionListener>> dataCollectionListenersRegistry;
+    public static void setDataCollectionListenersRegistry(Map<String, Class<? extends DataCollectionListener>> map)
+    {
+    	dataCollectionListenersRegistry = map;
+    }
+    
+    public static Class<? extends DataCollectionListener> getListenerClassFromRegistry(String className)
+    {
+    	if( dataCollectionListenersRegistry != null )
+    		return dataCollectionListenersRegistry.get(className);
+    	
+    	return null;
+    }
+    
+    
+    private static Map<String, Class<? extends QuerySystem>> querySystemRegistry;
+    public static void setQuerySystemRegistry(Map<String, Class<? extends QuerySystem>> map)
+    {
+    	querySystemRegistry = map;
+    }
+    
+    public static Class<? extends QuerySystem> getQuerySystemClassFromRegistry(String className)
+    {
+    	if( querySystemRegistry != null )
+    		return querySystemRegistry.get(className);
+    	
+    	return null;
+    }
+
 }

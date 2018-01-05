@@ -284,7 +284,7 @@ public class DataCollectionInfo
             String className = properties.getProperty(QuerySystem.QUERY_SYSTEM_CLASS);
             if( className != null )
             {
-                Class<? extends QuerySystem> c = possibleQuerySystems.getExtension(className);
+                Class<? extends QuerySystem> c = Environment.getQuerySystemClassFromRegistry(className);
                 if( c == null )
                 {
                     c = Environment.loadClass(className, QuerySystem.class);
@@ -309,58 +309,7 @@ public class DataCollectionInfo
             log.severe("Can not initialize query system for " + dc.getCompletePath() + ": " + ExceptionRegistry.log(t));
         }
     }
-
     
-/*    
-    
-    protected void initQuerySystem()
-    {
-        if(properties == null)
-            return;
-        
-        // try initialize QuerySystem
-        try
-        {
-            String className = properties.getProperty(QuerySystem.QUERY_SYSTEM_CLASS);
-            if( className != null )
-            {
-                Class c = getQuerySystemExtensions().get(className);
-                if( c == null )
-                {
-                    c = CollectionFactory.loadClass(className);
-                }
-                if( c != null )
-                {
-                    Class[] params = {DataCollection.class};
-                    java.lang.reflect.Constructor constructor = c.getConstructor(params);
-                    Object[] args = {dc};
-                    querySystem = (QuerySystem)constructor.newInstance(args);
-
-                    // register index files
-                    Index[] indexes = querySystem.getIndexes();
-                    if( indexes != null )
-                    {
-                        for( int i = 0; i < indexes.length; i++ )
-                        {
-                            if( indexes[i].getIndexFile() != null )
-                                addUsedFile(indexes[i].getIndexFile());
-                        }
-                    }
-                }
-            }
-        }
-        catch( Throwable t )
-        {
-            log
-                    .error("Can not initialize query system for DataCollection " + properties.getProperty(DataCollection.NAME_PROPERTY)
-                            + ".", t);
-        }
-    }
-*/    
-    
-    protected static final ClassExtensionRegistry<QuerySystem> possibleQuerySystems = new ClassExtensionRegistry<>(
-            "ru.biosoft.access.querySystem", QuerySystem.class);
-
     ////////////////////////////////////////////////////////////////////////////
     // For Internal usage
     //

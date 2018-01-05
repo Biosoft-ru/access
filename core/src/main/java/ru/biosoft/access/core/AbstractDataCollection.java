@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.swing.event.EventListenerList;
@@ -21,19 +22,12 @@ import ru.biosoft.exception.LoggedException;
 import ru.biosoft.util.IconUtils;
 
 import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
+import ru.biosoft.util.HashMapSoftValues;
+import ru.biosoft.util.HashMapWeakValues;
 import ru.biosoft.util.LazyValue;
+import ru.biosoft.util.ReadAheadIterator;
 
-//import ru.biosoft.access.history.HistoryFacade;
-//import ru.biosoft.util.ClassExtensionRegistry;
-//import ru.biosoft.util.ExProperties;
-//import ru.biosoft.util.HashMapSoftValues;
-//import ru.biosoft.util.HashMapWeakValues;
-//import ru.biosoft.util.LazyValue;
-//import ru.biosoft.util.ListUtil;
 import com.developmentontheedge.beans.PropertiesDPS;
-
-//import one.util.streamex.StreamEx;
-
 import com.developmentontheedge.beans.DynamicPropertySet;
 
 /**
@@ -68,15 +62,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         {
             Class<? extends DataElement> type = collection.getDataElementType();
             boolean leaf = !DataCollection.class.isAssignableFrom( type ) || collection.getInfo().isChildrenLeaf();
-            return new DataElementDescriptor( type, collection.getInfo().getProperty( DataCollection.CHILDREN_NODE_IMAGE ), leaf );
+            return new DataElementDescriptor( type, collection.getInfo().getProperty(CHILDREN_NODE_IMAGE), leaf );
         }
     }
-
-    public static final String DATA_COLLECTION_LISTENER = "data-collection-listener";
-    protected static final ClassExtensionRegistry<DataCollectionListener> possibleListeners = new ClassExtensionRegistry<>(
-            "ru.biosoft.access.dataCollectionListener", DataCollectionListener.class);
-
-    protected boolean mutable = true;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors
@@ -173,9 +161,10 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         {
             try
             {
-                Class<? extends DataCollectionListener> clazz = possibleListeners.getExtension(properties.get(DATA_COLLECTION_LISTENER).toString());
-                if(clazz == null)
-                    throw new SecurityException("Listener class is not found in the registry: "+properties.get(DATA_COLLECTION_LISTENER));
+                Class<? extends DataCollectionListener> clazz = Environment.getListenerClassFromRegistry(properties.get(DATA_COLLECTION_LISTENER).toString());
+                if( clazz == null )
+                    throw new SecurityException("Listener class is not found in the registry: " + properties.get(DATA_COLLECTION_LISTENER));
+                
                 addDataCollectionListener(clazz.getConstructor(QuerySystem.class).newInstance(getInfo().getQuerySystem()));
             }
             catch( Throwable e )
@@ -232,6 +221,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     ////////////////////////////////////////////////////////////////////////////
     // Info methods
     //
+
+    protected boolean mutable = true;
+
     /**
      * Returns false.
      * Override this method for return correct value.
@@ -660,9 +652,54 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         if(!isValid())
             return Collections.<T>emptyList().iterator();
             		
-        return DataCollectionUtils.createDataCollectionIterator(this);
+        return createDataCollectionIterator(this);
     }
 
+    /**
+     * Utility method to help write iterator() for DataCollection if getNameList() and get() methods are already implemented.
+     * 
+     * @param dc DataCollection to create iterator for
+     * @return created Iterator
+     */
+    public static @Nonnull
+    <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc)
+    {
+        return createDataCollectionIterator(dc, dc.getNameList().iterator());
+    }
+    
+    /**
+     * Utility method to help write iterator() for DataCollection if getNameList() and get() methods are already implemented.
+     * @param dc DataCollection to create iterator for
+     * @param nameIterator iterator which returns names
+     * @return created Iterator
+     */
+    public static @Nonnull <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc, final Iterator<String> nameIterator)
+    {
+        return new ReadAheadIterator<T>()
+        {
+            @Override
+            protected T advance()
+            {
+                while( nameIterator.hasNext() )
+                {
+                    try
+                    {
+                        String name = nameIterator.next();
+                        T de = dc.get(name);
+                        if(de != null)
+                            return de;
+                    }
+                    catch( Exception e )
+                    {
+                        throw ExceptionRegistry.translateException(e);
+                    }
+                }
+                return null;
+            }
+        };
+    }
+    
+    
     /**
      * try to sort name list by element titles
      * @return true if sorting complete
@@ -672,7 +709,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         QuerySystem qs = getInfo().getQuerySystem();
         if( qs != null )
         {
-            final Index<String> titleIndex = qs.getIndex("title");
+            @SuppressWarnings("unchecked")
+			final Index<String> titleIndex = qs.getIndex("title");
             if( titleIndex != null )
             {
                 try
@@ -735,17 +773,12 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     ////////////////////////////////////////////////////////////////////////////
     // Protected
     //
-    
-        /** Cache for already accessed data elements.*/
-    protected Map<String, T> v_cache;
-
-
+   
     /** @todo Document */
     protected String path;
 
     /** Data collection info for this data collection. */
     protected DataCollectionInfo info;
-
     
     protected Logger log;
 
@@ -778,24 +811,6 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         }
     }
     
-    private void initCache(Properties properties)
-    {
-        String cachingStrategy = properties.getProperty( CACHING_STRATEGY, "weak" );
-        if(cachingStrategy.equals( "weak" ))
-            v_cache = new HashMapWeakValues();
-        else if(cachingStrategy.equals( "soft" ))
-            v_cache = new HashMapSoftValues();
-        else if(cachingStrategy.equals( "hard" ))
-            v_cache = new HashMap<>();
-        else if(cachingStrategy.equals( "none" ))
-            v_cache = null;
-        else
-        {
-            log.warning( "Unknown caching-strategy '" + cachingStrategy + "' for '" + DataElementPath.create( this ) + "'" );
-            v_cache = new HashMapWeakValues();
-        }
-    }
-
     ///////////////////////////////////////////////////////////////////
     // Event notification issues
     //
@@ -1156,6 +1171,71 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Cache issues
+    //
+
+    /** Cache for already accessed data elements.*/
+    protected Map<String, T> v_cache;
+
+    private void initCache(Properties properties)
+    {
+        String cachingStrategy = properties.getProperty( CACHING_STRATEGY, "weak" );
+
+        if(cachingStrategy.equals( "weak" ))
+            v_cache = new HashMapWeakValues();
+        else if(cachingStrategy.equals( "soft" ))
+            v_cache = new HashMapSoftValues();
+        else if(cachingStrategy.equals( "hard" ))
+            v_cache = new HashMap<>();
+        else if(cachingStrategy.equals( "none" ))
+            v_cache = null;
+        else
+        {
+            log.warning( "Unknown caching-strategy '" + cachingStrategy + "' for '" + DataElementPath.create( this ) + "'" );
+            v_cache = new HashMapWeakValues();
+        }
+    }
+    
+    @Override
+    public T getFromCache(String dataElementName)
+    {
+        if( v_cache != null )
+            return v_cache.get(dataElementName);
+        return null;
+    }
+    
+    public Stream<T> cachedElements()
+    {
+        if(v_cache == null || v_cache.size() == 0 )
+            return Stream.empty();
+        
+        return v_cache.values().stream();
+    }
+
+    public DataElement getNonCached(String dataElementName) throws Exception
+    {
+        return doGet(dataElementName);
+    }
+
+    public void removeFromCache(String dataElementName)
+    {
+        if( v_cache != null )
+            v_cache.remove(dataElementName);
+    }
+
+    /**
+     * Release the DataElement specified by its name from the cache.
+     *
+     * @pending whether this operation should be called by close operation.
+     */
+    @Override
+    public void release(String name)
+    {
+        if( v_cache != null )
+            v_cache.remove(name);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
     // Closing issues
     //
 
@@ -1197,44 +1277,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
             }
         }
     }
+   
 
-    /**
-     * Release the DataElement specified by its name from the cache.
-     *
-     * @pending whether this operation should be called by close operation.
-     */
-    @Override
-    public void release(String name)
-    {
-        if( v_cache != null )
-            v_cache.remove(name);
-    }
-
-    @Override
-    public T getFromCache(String dataElementName)
-    {
-        if( v_cache != null )
-            return v_cache.get(dataElementName);
-        return null;
-    }
-    
-    public StreamEx<T> cachedElements()
-    {
-        if(v_cache == null)
-            return StreamEx.empty();
-        return StreamEx.ofValues(v_cache).nonNull();
-    }
-
-    public DataElement getNonCached(String dataElementName) throws Exception
-    {
-        return doGet(dataElementName);
-    }
-
-    public void removeFromCache(String dataElementName)
-    {
-        if( v_cache != null )
-            v_cache.remove(dataElementName);
-    }
 
     public DynamicPropertySet getDynamicProperties()
     {
@@ -1266,7 +1310,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     }
 
     @Override
-    public DataCollection<?> clone(DataCollection origin, String name) throws CloneNotSupportedException 
+    public DataCollection<?> clone(DataCollection<?> origin, String name) throws CloneNotSupportedException 
     {
         @SuppressWarnings("unchecked")
         AbstractDataCollection<T> clone = (AbstractDataCollection<T>) super.clone(origin, name);
@@ -1278,6 +1322,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     ////////////////////////////////////////////////////////////////////////////
     // Private
+    
     /** List of listeners. */
     private final EventListenerList listenerList = new EventListenerList();
-}// end of class AbstractDataCollection
+    
+}
