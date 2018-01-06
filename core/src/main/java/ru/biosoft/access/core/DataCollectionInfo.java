@@ -22,7 +22,6 @@ import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.LoggedClassCastException;
 import ru.biosoft.exception.LoggedClassNotFoundException;
 import ru.biosoft.util.IconUtils;
-import one.util.streamex.StreamEx; // TODO remove
 
 public class DataCollectionInfo
 {

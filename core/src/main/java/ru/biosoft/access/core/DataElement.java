@@ -1,5 +1,8 @@
 package ru.biosoft.access.core;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import javax.annotation.Nonnull;
 
 import com.developmentontheedge.beans.annot.PropertyName;
@@ -45,11 +48,12 @@ public interface DataElement
     }
 
     /**
-     * @return StreamEx of parents starting from immediate parent, then grandparent and so on
+     * @return Stream of parents starting from immediate parent, then grandparent and so on
+     * TODO fix fro StreamEx to Stream
      *
-    default StreamEx<DataCollection<?>> parents()
+    default Stream<DataCollection<?>> parents()
     {
-        return StreamEx.<DataCollection<?>> iterate( getOrigin(), DataElement::getOrigin ).takeWhile( Objects::nonNull );
-    }
-*/
+        return Stream.<DataCollection<?>> iterate( getOrigin(), DataElement::getOrigin ).takeWhile( Objects::nonNull );
+    }*/
+
 }

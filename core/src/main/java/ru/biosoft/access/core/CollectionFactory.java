@@ -20,7 +20,6 @@ import javax.imageio.ImageIO;
 
 import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 
-//import one.util.streamex.StreamEx;
 
 //import org.eclipse.core.runtime.IConfigurationElement;
 //import org.eclipse.core.runtime.IExtensionRegistry;

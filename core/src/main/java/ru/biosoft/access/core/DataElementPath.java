@@ -2,6 +2,7 @@ package ru.biosoft.access.core;
 
 import java.io.Serializable;
 import java.security.InvalidParameterException;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -480,8 +481,11 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      */
     public @Nonnull DataElementPathSet getChildren() throws RepositoryException
     {
-        DataElementPathSet result = getDataCollection().names().map( this::getChildPath ).toCollection( DataElementPathSet::new );
+        DataElementPathSet result = getDataCollection().names().map( this::getChildPath ).
+        		collect( Collectors.toCollection(DataElementPathSet::new));
+        
         result.setDefaultPath(this);
+        
         return result;
     }
     

@@ -2,13 +2,13 @@ package ru.biosoft.access.core;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
+
 import javax.annotation.Nonnull;
 
 import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.LoggedException;
 import com.developmentontheedge.beans.annot.PropertyName;
-
-import one.util.streamex.StreamEx;
 
 /**
  * DataCollection is a set of homogeneous DataElements.
@@ -231,13 +231,16 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
     // Streams
     //
 
-    default StreamEx<String> names()
+    default Stream<String> names()
     {
-        return StreamEx.of( getNameList() );
+        return getNameList().stream(); 
     }
 
-    default StreamEx<T> stream()
+    default Stream<T> stream()
     {
+    	if( this.isEmpty() )
+    		return Stream.empty();
+    	
         return names().map( name -> {
             try
             {
@@ -247,11 +250,13 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
             {
                 throw ExceptionRegistry.translateException(e);
             }
-        }).nonNull();
+        });
     }
-
-    default <TT extends T> StreamEx<TT> stream(Class<TT> elementClass)
+    
+/*
+    default <TT extends T> Stream<TT> stream(Class<TT> elementClass)
     {
         return stream().select(elementClass);
     }
+*/    
 }
