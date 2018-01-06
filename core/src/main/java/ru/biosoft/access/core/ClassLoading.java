@@ -24,9 +24,10 @@ public interface ClassLoading
      */
     public @Nonnull Class<?> loadClass(String className, @CheckForNull String pluginNames) throws LoggedClassNotFoundException;
 
-    
     public @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, @Nonnull Class<T> superClass) throws LoggedClassNotFoundException, LoggedClassCastException;
 
+    public @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass) throws LoggedClassNotFoundException, LoggedClassCastException;
+    
     /**
      * Returns absolute resource location by class and location relative to class
      * 

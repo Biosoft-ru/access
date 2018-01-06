@@ -18,6 +18,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.CheckForNull;
 import javax.imageio.ImageIO;
 
+import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
+
 //import one.util.streamex.StreamEx;
 
 //import org.eclipse.core.runtime.IConfigurationElement;
@@ -135,6 +137,23 @@ public class CollectionFactory
 		return getDataElement( completeName, false );
 	}
 
+    /**
+    * Returns the data collection with the specified complete name
+    * relative of one of the data collection from data collections
+    * registered in root hash map.
+    *
+    * @param completeName complete name
+    * @return named DataCollection or null otherwise
+    */
+   static public @CheckForNull DataCollection getDataCollection(String completeName)
+   {
+       DataElement de = getDataElement(completeName);
+       if( de instanceof DataCollection )
+           return (DataCollection)de;
+  
+       return null;
+   }
+   
 	/**
 	 * Returns the DataElement with the specified name.
 	 * 
@@ -236,7 +255,44 @@ public class CollectionFactory
             currentPaths.get().remove( completeName );
         }
     }
-	
+
+	////////////////////////////////////////////////////////////////////////////
+	// Create data collection 
+	//
+
+    /**
+    * Creates {@link DataCollection} with the specified parent and properties.
+    */
+   static public @Nonnull DataCollection createCollection(DataCollection<?> parent, Properties properties)
+   {
+       String className = properties.getProperty(CLASS_PROPERTY);
+       DataElementPath childPath = DataElementPath.create(parent, properties.getProperty(NAME_PROPERTY, ""));
+       
+       try
+       {
+           String pluginNames = properties.getProperty(PLUGINS_PROPERTY);
+           
+           //if( pluginNames == null )
+           //    pluginNames = Environment.getPluginForClass( className );
+           
+           Class<? extends DataCollection> c = Environment.loadClass(className, pluginNames, DataCollection.class);
+           Constructor<? extends DataCollection> constructor = c.getConstructor( DataCollection.class, Properties.class );
+           
+           return constructor.newInstance( parent, properties );
+       }
+       catch(DataElementCreateException e)
+       {
+           if( e.getProperty("path").equals(childPath) )
+               throw e;
+           
+           throw new DataElementCreateException(e, childPath, DataCollection.class);
+       }
+       catch(Throwable t)
+       {
+           throw new DataElementCreateException(t, childPath, DataCollection.class);
+       }
+   }
+
 	////////////////////////////////////////////////////////////////////////////
 	// TODO - refactoring
 	//
@@ -320,34 +376,6 @@ public class CollectionFactory
 //    }
 //
 //    /**
-//     * Creates {@link DataCollection} with the specified parent and properties.
-//     */
-//    static public @Nonnull DataCollection createCollection(DataCollection<?> parent, Properties properties)
-//    {
-//        String className = properties.getProperty( DataCollection.CLASS_PROPERTY );
-//        DataElementPath childPath = DataElementPath.create( parent, properties.getProperty( DataCollection.NAME_PROPERTY, "" ) );
-//        try
-//        {
-//            String pluginNames = properties.getProperty( DataCollection.PLUGINS_PROPERTY );
-//            if( pluginNames == null )
-//                pluginNames = ClassLoading.getPluginForClass( className );
-//            Class<? extends DataCollection> c = ClassLoading.loadSubClass( className, pluginNames, DataCollection.class );
-//            Constructor<? extends DataCollection> constructor = c.getConstructor( DataCollection.class, Properties.class );
-//            return constructor.newInstance( parent, properties );
-//        }
-//        catch( DataElementCreateException e )
-//        {
-//            if( e.getProperty( "path" ).equals( childPath ) )
-//                throw e;
-//            throw new DataElementCreateException( e, childPath, DataCollection.class );
-//        }
-//        catch( Throwable t )
-//        {
-//            throw new DataElementCreateException( t, childPath, DataCollection.class );
-//        }
-//    }
-//
-//    /**
 //     * Creates directory for the new database in "databases" repository (useful when installing new module)
 //     * @param dbName - name of new database
 //     * @return File - created directory
@@ -375,22 +403,6 @@ public class CollectionFactory
 //
 //
 //
-//    /**
-//     * Returns the data collection with the specified complete name
-//     * relative of one of the data collection from data collections
-//     * registered in root hash map.
-//     *
-//     * @param completeName complete name
-//     * @return named DataCollection or null otherwise
-//     */
-//    static public @CheckForNull DataCollection getDataCollection(String completeName)
-//    {
-//        DataElement de = getDataElement( completeName );
-//        if( de instanceof DataCollection )
-//            return (DataCollection)de;
-//
-//        return null;
-//    }
 //
 //    /**
 //     * @deprecated use DataElement.cast(clazz)

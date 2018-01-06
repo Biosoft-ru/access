@@ -1,18 +1,16 @@
 package ru.biosoft.access.core;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
-import ru.biosoft.access.exception.DataElementCreateException;
 import ru.biosoft.exception.ExceptionRegistry;
-import ru.biosoft.util.ApplicationUtils;
-import ru.biosoft.util.ExProperties;
-import ru.biosoft.util.entry.PluginEntry;
 
+import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 
 /**
  * General class for derived data collection.
@@ -64,11 +62,11 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
         if( primaryCollection == null )
         {
             // loading of format config
-            String nextFile = properties.getProperty(DataCollection.NEXT_CONFIG);
-            String configPath = properties.getProperty(DataCollection.CONFIG_PATH_PROPERTY);
+            String nextFile = properties.getProperty(NEXT_CONFIG);
+            String configPath = properties.getProperty(CONFIG_PATH_PROPERTY);
             if( configPath != null )
                 configPath = configPath.trim();
-            String filePath = properties.getProperty(DataCollection.FILE_PATH_PROPERTY);
+            String filePath = properties.getProperty(FILE_PATH_PROPERTY);
             if( filePath != null )
                 filePath = filePath.trim();
             if( filePath == null || filePath.equals("") )
@@ -78,18 +76,31 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
             if( nextFile != null )
             {
                 nextFile = nextFile.trim();
-                PluginEntry nextConfig = ApplicationUtils.resolvePluginPath( configPath ).child( nextFile );
-                nextProperties = new ExProperties(nextConfig);
-                if( nextProperties.get(DataCollection.FILE_PATH_PROPERTY) == null )
-                {
-                    nextProperties.put(DataCollection.FILE_PATH_PROPERTY, filePath);
-                }
-                String plugins = properties.getProperty(DataCollection.PLUGINS_PROPERTY);
-                ExProperties.addPlugins(nextProperties, plugins);
-                primaryCollection = CollectionFactory.createCollection(parent, nextProperties);
+                
+                FileInputStream stream = new FileInputStream(configPath + "/" + nextFile);
+                nextProperties = new Properties();
+                nextProperties.load(stream);
+                stream.close();
 
-                if(nextConfig.getFile() != null)
-                    primaryCollection.getInfo().addUsedFile(nextConfig.getFile());
+                // Pending is it needed?
+                //if( nextProperties.get(DataCollection.CONFIG_PATH_PROPERTY) == null )
+                //    nextProperties.put(DataCollection.CONFIG_PATH_PROPERTY, configPath);
+
+                if( nextProperties.get(FILE_PATH_PROPERTY) == null )
+                    nextProperties.put(FILE_PATH_PROPERTY, filePath);
+
+                String plugins = properties.getProperty(PLUGINS_PROPERTY);
+                if( plugins != null )
+                {
+                    if( nextProperties.containsKey(PLUGINS_PROPERTY) )
+                    {
+                        plugins += ";" + nextProperties.getProperty(PLUGINS_PROPERTY);
+                    }
+                    nextProperties.put(PLUGINS_PROPERTY, plugins);
+                }
+
+                primaryCollection = CollectionFactory.createCollection(parent, nextProperties);
+                primaryCollection.getInfo().addUsedFile(new File(configPath + "/" + nextFile));
             }
         }
         if( primaryCollection == null )
@@ -142,7 +153,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      }*/
 
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#getSize()} method of primary data collection.
+     * Calls {@link DataCollection#getSize()} method of primary data collection.
      * @return Number of data element in primary data collection.
      */
     @Override
@@ -153,7 +164,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
 
 
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#getDataElementType()} method of primary data collection.
+     * Calls {@link DataCollection#getDataElementType()} method of primary data collection.
      * @return Type of data elements stored in the primary data collection.
      */
     @Override
@@ -163,7 +174,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     }
 
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#isMutable()}  method of primary data collection.
+     * Calls {@link DataCollection#isMutable()}  method of primary data collection.
      * @return <b>true</b> if primary data collection is mutable,<br> <b>false</b> otherwise..
      */
     @Override
@@ -175,7 +186,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     // Data element access methods
     //
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#contains(String)}  method of primary data collection.
+     * Calls {@link DataCollection#contains(String)}  method of primary data collection.
      *
      * @param name specified name of data element
      * @return <b>true</b> if primary data collection contains element with specified name,<br> <b>false</b> otherwise..
@@ -197,7 +208,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     }
 
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#contains(DataElement)}  method of primary data collection.
+     * Calls {@link DataCollection#contains(DataElement)}  method of primary data collection.
      *
      * @param de specified data element
      * @return <b>true</b> if primary data collection contains specified element ,<br> <b>false</b> otherwise..
@@ -210,7 +221,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     
     protected List<String> sortedNames = null;
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#getNameList()} method of primary data collection
+     * Calls {@link DataCollection#getNameList()} method of primary data collection
      *
      * @return primary data collection name list.
      */
@@ -238,7 +249,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     // Data element modification methods
     //
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#put(DataElement)} of primary collection
+     * Calls {@link DataCollection#put(DataElement)} of primary collection
      * Puts the specified data element into the primary collection.
      *
      * @param element
@@ -252,7 +263,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     }
 
     /**
-     * Calls {@link ru.biosoft.access.DataCollection#remove(String)} of primary collection.
+     * Calls {@link DataCollection#remove(String)} of primary collection.
      * Remove the specified data element from the primary collection.
      *
      * @param element specified data element
@@ -287,7 +298,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     }
 
     /**
-     * Calls  {@link ru.biosoft.access.DataCollection#get(String)} method of primary collection
+     * Calls  {@link DataCollection#get(String)} method of primary collection
      *
      * @param name   Name of specified data element.
      * @return the specified data element from the primary collection.

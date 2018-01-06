@@ -42,6 +42,12 @@ public class Environment
     {
     	return classLoading.loadClass(className, superClass);
     }
+    
+    static public @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass) throws LoggedClassNotFoundException, LoggedClassCastException
+    {
+    	return classLoading.loadClass(className, pluginNames, superClass);
+    }
+    
 
     /**
      * Returns absolute resource location by class and location relative to class.
