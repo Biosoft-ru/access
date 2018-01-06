@@ -8,7 +8,7 @@ import com.developmentontheedge.beans.PropertyDescriptorEx;
  */
 public class VectorDataCollectionBeanInfo extends BeanInfoEx
 {
-    protected VectorDataCollectionBeanInfo(Class<? extends DataCollection<?>> c, String messageBundle)
+    protected VectorDataCollectionBeanInfo(Class<? extends DataCollection> c, String messageBundle)
     {
         super(c, messageBundle );
     }

@@ -88,7 +88,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @param parent Parent data collection.
      * @param properties Properties for creating data collection (may be changed).
      *
-     * @todo low makeInfo(Properties) should be moved to collection that only appears in repository.
+     * TODO low makeInfo(Properties) should be moved to collection that only appears in repository.
      */
     public AbstractDataCollection(DataCollection<?> parent, Properties properties)
     {
