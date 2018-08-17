@@ -1,6 +1,7 @@
 package ru.biosoft.access.core;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -22,14 +23,14 @@ public interface DataElement
      * Returns the collection this element belongs to.
      * Since the element can be contained in several collections
      * this should return application-specific <i>main</i> parent collection.
-     * 
+     *
      * @see DataCollection
      */
     DataCollection<?> getOrigin();
 
     default DataElementPath getCompletePath()
     {
-        return DataElementPath.create(this); 
+        return DataElementPath.create(this);
     }
 
     @SuppressWarnings ( "unchecked" )
@@ -43,17 +44,24 @@ public interface DataElement
             }
             throw new DataElementInvalidTypeException(this, clazz);
         }
-        
+
         return (T)this;
     }
 
     /**
      * @return Stream of parents starting from immediate parent, then grandparent and so on
      * TODO fix fro StreamEx to Stream
-     *
+     */
     default Stream<DataCollection<?>> parents()
     {
-        return Stream.<DataCollection<?>> iterate( getOrigin(), DataElement::getOrigin ).takeWhile( Objects::nonNull );
-    }*/
+        List<DataCollection<?>> parents = new ArrayList();
+        DataCollection<?> parent = getOrigin();
+        while( parent != null )
+        {
+            parents.add( parent );
+            parent = parent.getOrigin();
+        }
+        return parents.stream();
+    }
 
 }
