@@ -20,6 +20,11 @@ public class Environment
 		return classLoading;
 	}
 
+    public static void setClassLoading(ClassLoading newClassLoading)
+    {
+        classLoading = newClassLoading;
+    }
+
     /**
      * Loads {@link Class} with the specified name.
      * @see ClassLoading
