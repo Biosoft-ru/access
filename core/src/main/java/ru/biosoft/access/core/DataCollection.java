@@ -252,11 +252,11 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
             }
         });
     }
-    
-/*
+
+
     default <TT extends T> Stream<TT> stream(Class<TT> elementClass)
     {
-        return stream().select(elementClass);
+        return (Stream<TT>) ( stream().filter( elementClass::isInstance ) );
     }
-*/    
+
 }
