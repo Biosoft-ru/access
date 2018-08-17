@@ -45,7 +45,7 @@
   <dependency>
    <groupId>com.developmentontheedge</groupId>
    <artifactId>beans</artifactId>
-   <version>3.0.3</version>
+   <version>3.0.4-SNAPSHOT</version>
   </dependency>
 
   <dependency>
@@ -54,6 +54,7 @@
    <version>4.12</version>
    <scope>test</scope>
   </dependency>
+  
 
  </dependencies>
 
@@ -100,6 +101,48 @@
          </tag>
        </tags>
       </configuration>
+     </execution>
+    </executions>
+   </plugin>
+   
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>3.0.2</version>
+    <configuration>
+     <archive>
+      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+      <addMavenDescriptor>false</addMavenDescriptor>
+     </archive>
+    </configuration>
+   </plugin>
+   
+   <plugin>
+    <groupId>org.apache.felix</groupId>
+    <artifactId>maven-bundle-plugin</artifactId>
+    <version>3.3.0</version>
+    <extensions>true</extensions>
+    <executions>
+     <execution>
+      <id>bundle-manifest</id>
+      <phase>process-classes</phase>
+      <goals>
+       <goal>manifest</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-source-plugin</artifactId>
+    <version>2.4</version>
+    <executions>
+     <execution>
+      <id>attach-sources</id>
+      <goals>
+       <goal>jar-no-fork</goal>
+      </goals>
      </execution>
     </executions>
    </plugin>
