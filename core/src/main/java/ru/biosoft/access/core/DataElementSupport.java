@@ -11,7 +11,7 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
 {
     /**
      *  Constructs data element.
-     *  
+     *
      *  @param name Name of the data element.
      *  @param origin Origin data collection.
      */
@@ -36,7 +36,7 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
 
     /**
      * Returns origin data collection for this data element.
-     * 
+     *
      * @todo final specifier needed.
      */
     @Override
@@ -62,7 +62,7 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
      *
      * It is set up in constructor and is declared <code>private</code>
      * to warranty that it can not be changed.
-     * 
+     *
      * @todo Getter for this member is not final, and so may be overridden.
      */
     private String name;
@@ -77,7 +77,7 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
     {
         return getName().compareTo((de).getName());
     }
-    
+
     @Override
     public Object clone() throws CloneNotSupportedException
     {
@@ -87,13 +87,13 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
     /**
      * Clones data element overriding its name and origin to the specified values
      * Implementation class must implement {@link CloneableDataElement} interface to signal that clone is supported.
-     * 
+     *
      * @param name new name for the element
      * @param origin new origin for the element
      * @return cloned element
      * @throws CloneNotSupportedException if implementation class doesn't implement CloneableDataElement
      */
-    public DataElement clone(DataCollection<? extends DataElement> origin, String name) throws CloneNotSupportedException
+    public DataElement clone(DataCollection<?> origin, String name) throws CloneNotSupportedException
     {
         if( !(this instanceof CloneableDataElement) ) throw new CloneNotSupportedException();
         try
