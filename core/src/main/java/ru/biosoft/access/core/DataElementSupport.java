@@ -40,7 +40,7 @@ public class DataElementSupport implements DataElement, Comparable<DataElement>,
      * @todo final specifier needed.
      */
     @Override
-    public DataCollection<?> getOrigin()
+    public DataCollection getOrigin()
     {
         return origin;
     }

@@ -12,7 +12,7 @@ public interface Transformer<I extends DataElement, O extends DataElement>
      * 
      * @return Class of input data element.
      */
-    Class getInputType();
+    Class<? extends I> getInputType();
 
     /**
      * Return class of output data element.
@@ -20,7 +20,7 @@ public interface Transformer<I extends DataElement, O extends DataElement>
      * 
      * @return Class of output data element.
      */
-    Class getOutputType();
+    Class<? extends O> getOutputType();
 
     /**
      * Returns is specified class accepted as output type.

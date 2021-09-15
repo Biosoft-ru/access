@@ -4,10 +4,6 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
-import ru.biosoft.access.core.DataElementGetException;
 import ru.biosoft.exception.LoggedException;
 import ru.biosoft.exception.MissingParameterException;
 
@@ -33,7 +29,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     public static final char PATH_SEPARATOR_CHAR = '/';
     public static final String PATH_SEPARATOR = "/";
 
-    public static final @Nonnull DataElementPath EMPTY_PATH = new DataElementPath("", null);
+    public static final DataElementPath EMPTY_PATH = new DataElementPath( "", null );
 
     protected final String path;
 
@@ -78,10 +74,10 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     }
 
     /**
-     * Returns itself of not exists. Otherwise generates new path in the same collection which not exists.
+     * Returns itself if not exists. Otherwise generates new path in the same collection which not exists.
      * It is useful to generate path to result without overwriting already existing data.
      */
-    public @Nonnull DataElementPath uniq() throws RepositoryException
+    public DataElementPath uniq() throws RepositoryException
     {
         if(!exists()) return this;
         DataCollection<?> parent = getParentCollection();
@@ -102,7 +98,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param ancestor DataElementPath to test
      * @return true if ancestor is actually an ancestor or elements are equal; false otherwise
      */
-    public boolean isDescendantOf(@Nonnull DataElementPath ancestor)
+    public boolean isDescendantOf(DataElementPath ancestor)
     {
         if(ancestor.equals( EMPTY_PATH ))
             return true;
@@ -127,7 +123,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param descendant DataElementPath to test
      * @return true if descendant is actually a descendant or elements are equal; false otherwise
      */
-    public boolean isAncestorOf(@Nonnull DataElementPath descendant)
+    public boolean isAncestorOf(DataElementPath descendant)
     {
         return descendant.isDescendantOf(this);
     }
@@ -138,7 +134,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param sibling - path to test
      * @return true if sibling is sibling for current path or equals to current path; false otherwise
      */
-    public boolean isSibling(@Nonnull DataElementPath sibling)
+    public boolean isSibling(DataElementPath sibling)
     {
         String[] fields1 = getPathComponents();
         String[] fields2 = sibling.getPathComponents();
@@ -160,7 +156,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param ancestor path to some ancestor element
      * @return relative path string
      */
-    public @Nonnull String getPathDifference(@Nonnull DataElementPath ancestor)
+    public String getPathDifference(DataElementPath ancestor)
     {
         String[] myComponents = getPathComponents();
         int depth = ancestor.getDepth();
@@ -174,7 +170,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
         return result.toString();
     }
 
-    public @Nonnull DataElementPath getCommonPrefix(@Nonnull DataElementPath other)
+    public DataElementPath getCommonPrefix(DataElementPath other)
     {
         if(this.equals( EMPTY_PATH ) || other.equals( EMPTY_PATH ) || this.equals( other ))
             return this;
@@ -199,7 +195,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param relativePath - relative path. May contain ".." to go up or "." to stay.
      * @return created path
      */
-    @Nonnull
+
     public DataElementPath getRelativePath(String relativePath)
     {
         if(relativePath.isEmpty())
@@ -225,7 +221,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     /**
      * @return DataElementDescriptor provided by parent collection for current path.
      */
-    public @CheckForNull DataElementDescriptor getDescriptor()
+    public DataElementDescriptor getDescriptor()
     {
         DataElementPath parent = getParentPath();
         if(parent.isEmpty())
@@ -243,7 +239,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return fetched DataElement or null if it doesn't exist or some error occurs
      * @TODO rename method
      */
-    public @CheckForNull DataElement optDataElement()
+    public DataElement optDataElement()
     {
         try
         {
@@ -255,7 +251,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
         }
     }
 
-    public @CheckForNull <T extends DataElement> T optDataElement(@Nonnull Class<T> clazz)
+    public <T extends DataElement> T optDataElement(Class<T> clazz)
     {
         if(getName().equals( "" ))
             return null;
@@ -276,7 +272,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return fetched DataElement
      * @throws RepositoryException if element cannot be fetched
      */
-    public @Nonnull DataElement getDataElement() throws RepositoryException
+    public DataElement getDataElement() throws RepositoryException
     {
         return getDataElement(DataElement.class);
     }
@@ -288,7 +284,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return fetched DataElement
      * @throws RepositoryException if element cannot be fetched or has invalid class
      */
-    public @Nonnull <T extends DataElement> T getDataElement(@Nonnull Class<T> clazz) throws RepositoryException
+    public <T extends DataElement> T getDataElement(Class<T> clazz) throws RepositoryException
     {
         DataElement de;
         try
@@ -310,7 +306,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * @return fetched DataCollection or null if it doesn't exist, not a DataCollection or some error occurs.
      */
-    public @CheckForNull DataCollection<?> optDataCollection()
+    public DataCollection<?> optDataCollection()
     {
         return optDataElement(DataCollection.class);
     }
@@ -320,7 +316,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * @return fetched DataCollection or null if it doesn't exist, not a DataCollection or some error occurs.
      */
-    public @CheckForNull <T extends DataElement> DataCollection<T> optDataCollection(Class<T> clazz) throws RepositoryException
+    public <T extends DataElement> DataCollection<T> optDataCollection(Class<T> clazz) throws RepositoryException
     {
         try
         {
@@ -337,7 +333,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return fetched DataCollection
      * @throws RepositoryException if element cannot be fetched
      */
-    public @Nonnull DataCollection<DataElement> getDataCollection() throws RepositoryException
+    public DataCollection<DataElement> getDataCollection() throws RepositoryException
     {
         return getDataCollection(DataElement.class);
     }
@@ -350,7 +346,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return fetched DataCollection
      * @throws RepositoryException if element cannot be fetched or is not a collection or doesn't contain specified elements
      */
-    public @Nonnull <T extends DataElement> DataCollection<T> getDataCollection(Class<T> clazz) throws RepositoryException
+    public <T extends DataElement> DataCollection<T> getDataCollection(Class<T> clazz) throws RepositoryException
     {
         @SuppressWarnings("unchecked")
 		DataCollection<T> dc = getDataElement(DataCollection.class);
@@ -368,12 +364,12 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * @return DataCollection or null if it doesn't exist or some other error occurs
      */
-    public @CheckForNull DataCollection<?> optParentCollection()
+    public DataCollection<?> optParentCollection()
     {
         return getParentPath().optDataCollection();
     }
 
-    public @Nonnull DataCollection<DataElement> getParentCollection() throws RepositoryException
+    public DataCollection<DataElement> getParentCollection() throws RepositoryException
     {
         return getParentPath().getDataCollection(DataElement.class);
     }
@@ -385,7 +381,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @return DataCollection
      * @throws RepositoryException if collection not found, cannot be fetched or has invalid type
      */
-    public @Nonnull <T extends DataElement> DataCollection<T> getParentCollection(Class<T> clazz) throws RepositoryException
+    public <T extends DataElement> DataCollection<T> getParentCollection(Class<T> clazz) throws RepositoryException
     {
         return getParentPath().getDataCollection(clazz);
     }
@@ -418,7 +414,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param name - name of child item (may not exist). Null name is considered as empty name
      * @return created DataElementPath
      */
-    public @Nonnull DataElementPath getChildPath(String... names)
+    public DataElementPath getChildPath(String ... names)
     {
         DataElementPath result = this;
         for(String name: names)
@@ -443,11 +439,12 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     /**
      * @return array of Strings containing path components ("data/Example/element" -> {"data", "Example", "element"})
      */
-    public @Nonnull String[] getPathComponents()
+    public String[] getPathComponents()
     {
         if(equals(EMPTY_PATH))
         	return new String[0];
 
+        //TODO: do no use LoggedException
         String[] result = LoggedException.split(path, PATH_SEPARATOR_CHAR);
         for(int i=0; i<result.length; i++)
         {
@@ -479,7 +476,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * <p>Warning: it's alphabetically sorted, not collection-specific sorted.</p>
      */
-    public @Nonnull DataElementPathSet getChildren() throws RepositoryException
+    public DataElementPathSet getChildren() throws RepositoryException
     {
         DataElementPathSet result = getDataCollection().names().map( this::getChildPath ).
         		collect( Collectors.toCollection(DataElementPathSet::new));
@@ -494,7 +491,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * <p>Warning: it's alphabetically sorted, not collection-specific sorted.</p>
      */
-    public @Nonnull DataElementPath[] getChildrenArray() throws RepositoryException
+    public DataElementPath[] getChildrenArray() throws RepositoryException
     {
         DataElementPathSet children = getChildren();
         return children.toArray(new DataElementPath[children.size()]);
@@ -506,7 +503,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param name - name of sibling item (may not exist)
      * @return created DataElementPath
      */
-    public @Nonnull DataElementPath getSiblingPath(String name)
+    public DataElementPath getSiblingPath(String name)
     {
         return getParentPath().getChildPath(name);
     }
@@ -518,7 +515,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * @return created DataElementPath
      */
-    public @Nonnull DataElementPath getParentPath()
+    public DataElementPath getParentPath()
     {
         DataElementPath _parentPath = parentPath;
         if(_parentPath == null)
@@ -577,7 +574,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     /**
      * Returns last name component of current path
      */
-    public @Nonnull String getName()
+    public String getName()
     {
         if(name == null)
         {
@@ -658,7 +655,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * Create and return DataElementPath if argument is not null (otherwise return null)
      * TODO: cache
      */
-    public static DataElementPath create(@CheckForNull String path)
+    public static DataElementPath create(String path)
     {
         if(path == null)
         	return null;
@@ -682,7 +679,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      *
      * @param element - element to construct from
      */
-    public static DataElementPath create(@CheckForNull DataElement element)
+    public static DataElementPath create(DataElement element)
     {
         if(element == null)
             return null;
@@ -735,7 +732,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param name unescaped name
      * @return escaped name
      */
-    public static @Nonnull String escapeName(@Nonnull String name)
+    public static String escapeName(String name)
     {
         char[] result = null;
         int j=0;
@@ -762,7 +759,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param escapedName escaped name
      * @return unescaped name
      */
-    public static @Nonnull String unescapeName(@Nonnull String escapedName)
+    public static String unescapeName(String escapedName)
     {
         char[] result = null;
         int j=0;

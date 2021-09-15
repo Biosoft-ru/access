@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
 
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
@@ -111,6 +108,7 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         if( this.filter == null )
             this.filter = Filter.INCLUDE_ALL_FILTER;
 
+        filteredNames = new ArrayList<>();
     	initNames(jobControl);
         primaryCollection.addDataCollectionListener(this);
     }
@@ -119,10 +117,8 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
      * @pending high provide more optimal filteredNames initilization for:
      * 1) filter is disabled;
      */
-    final protected void initNames(FunctionJobControl jobControl)
+    protected void initNames(FunctionJobControl jobControl)
     {
-        primaryCollection.addDataCollectionListener(this);
-
         if( filter==Filter.INCLUDE_NONE_FILTER )
             return;
         if( filter==Filter.INCLUDE_ALL_FILTER )
@@ -295,7 +291,7 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
     {}
 
     @Override
-    public @Nonnull List<String> getNameList()
+    public List<String> getNameList()
     {
         return Collections.unmodifiableList(getFilteredNames());
     }

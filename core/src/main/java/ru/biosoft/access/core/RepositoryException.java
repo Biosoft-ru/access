@@ -1,6 +1,5 @@
 package ru.biosoft.access.core;
 
-import ru.biosoft.access.core.DataElementPath;
 import ru.biosoft.exception.ExceptionDescriptor;
 import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.LoggedException;

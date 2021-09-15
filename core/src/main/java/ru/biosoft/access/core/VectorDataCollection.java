@@ -11,8 +11,6 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-
 import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 
 /**
@@ -91,7 +89,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * @return an iterator over the elements in this list in alphabetically sorted sequence.
      */
     @Override
-    public @Nonnull Iterator<T> iterator()
+    public Iterator<T> iterator()
     {
         return elements.values().iterator();
     }
@@ -108,7 +106,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      *
      * @see Vector.toArray(Object[] a)
      */
-    public @Nonnull T[] toArray(T[] a)
+    public T[] toArray(T[] a)
     {
         return elements.values().toArray(a);
     }
@@ -131,7 +129,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * @return Names of all elements in this data collection in alphabetically sorted order.
      */
     @Override
-    public @Nonnull List<String> getNameList()
+    public List<String> getNameList()
     {
         if(vectorNameList == null)
         {

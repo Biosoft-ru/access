@@ -1,7 +1,5 @@
 package ru.biosoft.access.core;
 
-import java.beans.PropertyDescriptor;
-
 import ru.biosoft.exception.ExceptionDescriptor;
 
 /**

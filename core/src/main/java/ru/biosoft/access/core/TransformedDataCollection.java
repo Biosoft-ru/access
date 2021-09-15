@@ -3,9 +3,6 @@ package ru.biosoft.access.core;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-
-import ru.biosoft.access.core.DataElementGetException;
 
 /**
  *
@@ -90,7 +87,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
      * @return transformer output element
      */
     @Override
-    public @Nonnull Class<? extends DataElement> getDataElementType()
+    public Class<? extends DataElement> getDataElementType()
     {
         return outputType;
     }
@@ -108,7 +105,10 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
     {
         T1 tde = transformer.transformOutput((T2)element.cast( getDataElementType() ));
         doGetPrimaryCollection().put(tde);
-        sortedNames = null;
+        synchronized( nameLock )
+        {
+            sortedNames = null;
+        }
     }
 
     /**
@@ -150,7 +150,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
 
     ///////////////////////////////////////////////////////////////////////////
     @Override
-    public @Nonnull Iterator<T2> iterator()
+    public Iterator<T2> iterator()
     {
         return new MIterator();
     }

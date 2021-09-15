@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-
 import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.LoggedException;
 import com.developmentontheedge.beans.annot.PropertyName;
@@ -43,7 +41,7 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
      * Returns the type of DataElements stored in the data collection.
      * @return Type of DataElements stored in the data collection.
      */
-    @Nonnull Class<? extends DataElement> getDataElementType();
+    Class<? extends DataElement> getDataElementType();
     
     /**
      * Returns true if element of given class can be stored in this collection
@@ -107,7 +105,7 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
      * over it is in progress, the results of the iteration are undefined.
      */
     @Override
-    @Nonnull Iterator<T> iterator();
+    Iterator<T> iterator();
 
     /**
      * Returns an unmodifiable view of the data element name list.
@@ -123,7 +121,7 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
      *
      * @return  list of names
      */
-    @Nonnull List<String> getNameList();
+    List<String> getNameList();
 
     ////////////////////////////////////////
     // Data element modification methods
@@ -207,7 +205,7 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
      * @return DataElementPath object representing the path to this collection
      */
     @Override
-    @Nonnull DataElementPath getCompletePath();
+    DataElementPath getCompletePath();
 
     /**
      * Closes data collection, releases all resources.

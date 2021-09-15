@@ -1,11 +1,11 @@
 package ru.biosoft.access.core.filter;
 
 import java.beans.PropertyChangeEvent;
-
-import one.util.streamex.StreamEx;
-import ru.biosoft.access.core.DataElement;
+import java.util.stream.Stream;
 
 import com.developmentontheedge.beans.Option;
+
+import ru.biosoft.access.core.DataElement;
 
 /**
  * TODO comments
@@ -33,7 +33,7 @@ public class CompositeFilter<T extends DataElement> extends MutableFilter<T>
         if(de == null)
             return false;
 
-        return StreamEx.of( filterList ).allMatch( filter -> filter.isAcceptable( de ) );
+        return Stream.of( filterList ).allMatch( filter -> filter.isAcceptable( de ) );
     }
 
     @Override
@@ -125,7 +125,7 @@ public class CompositeFilter<T extends DataElement> extends MutableFilter<T>
 
     public boolean isExists( Filter<? super T> filter )
     {
-        return StreamEx.of(filterList).has( filter );
+        return Stream.of( filterList ).anyMatch( f -> ( filter == null ? f == null : filter.equals( f ) ) );
     }
 
 

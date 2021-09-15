@@ -2,18 +2,17 @@ package ru.biosoft.access.core;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
 import javax.swing.event.EventListenerList;
 
 import ru.biosoft.exception.ExceptionRegistry;
@@ -97,7 +96,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         initLog();
         
         preInit(properties);
-        init(properties);
+        initADC( properties );
     }
     
     /**
@@ -121,7 +120,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         }
 
         preInit(properties);
-        init(properties);
+        initADC( properties );
     }
 
     /**
@@ -131,7 +130,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     protected void preInit(Properties properties)
     {}
 
-    protected void init(Properties properties)
+    public static final String MANUALLY_INIT_DC_LISTENER = "manually-init-dc-listener";
+    //TODO: temporary renamed to avoid override with children's init methods that should be called after the parent initialization step
+    protected void initADC(Properties properties)
     {
         //pending CONFIG_PATH_PROPERTY?
         path = properties.getProperty(CONFIG_PATH_PROPERTY, ".");
@@ -157,7 +158,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         // Add history listener
         //HistoryFacade.addHistoryListener(this);
 
-        if( properties.get(DATA_COLLECTION_LISTENER) != null )
+        boolean manuallyInitDCListener = Boolean.parseBoolean( properties.getProperty( MANUALLY_INIT_DC_LISTENER, "false" ) );
+        if( !manuallyInitDCListener && properties.get( DATA_COLLECTION_LISTENER ) != null )
         {
             try
             {
@@ -244,7 +246,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @return Type of DataElements stored in the data collection.
      */
     @Override
-    public @Nonnull Class<? extends DataElement> getDataElementType()
+    public Class<? extends DataElement> getDataElementType()
     {
         try
         {
@@ -379,7 +381,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
             {
                 // basic validation
                 if(!Objects.equals( de.getName(), name ))
-                    throw new DataElementGetException(new InternalException("Name of created object is invalid: "+de.getName()), getCompletePath().getChildPath(name));
+                    throw new DataElementGetException(
+                            new InternalException( "Name of created object is invalid: " + de.getName() + "', should be: '" + name + "'" ),
+                            getCompletePath().getChildPath( name ) );
             }
             if( de != null && v_cache != null )
                 cachePut(de);
@@ -647,7 +651,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     //
 
     @Override
-    public @Nonnull Iterator<T> iterator()
+    public Iterator<T> iterator()
     {
         if(!isValid())
             return Collections.<T>emptyList().iterator();
@@ -661,7 +665,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @param dc DataCollection to create iterator for
      * @return created Iterator
      */
-    public static @Nonnull
+    public static
     <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc)
     {
         return createDataCollectionIterator(dc, dc.getNameList().iterator());
@@ -673,7 +677,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @param nameIterator iterator which returns names
      * @return created Iterator
      */
-    public static @Nonnull <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc, final Iterator<String> nameIterator)
+    public static <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc,
+            final Iterator<String> nameIterator)
     {
         return new ReadAheadIterator<T>()
         {
@@ -749,7 +754,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     private DataElementPath completeName = null;
     @Override
-    public @Nonnull DataElementPath getCompletePath()
+    public DataElementPath getCompletePath()
     {
         if( completeName == null )
         {
@@ -799,12 +804,20 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     {
         info = new DataCollectionInfo(this, properties);
 
-        if( properties != null && path != null )
+        if( properties != null )
         {
             String imageName = properties.getProperty(NODE_IMAGE);
             if( imageName != null )
-                info.setNodeImage(IconUtils.getImageIcon(path, imageName));
-
+            {
+                if( path != null )
+                {
+                    info.setNodeImage( Environment.getImageIcon( path, imageName ) );
+                }
+                else
+                {
+                    info.setNodeImage( Environment.getImageIcon( imageName ) );
+                }
+            }
             imageName = properties.getProperty(CHILDREN_NODE_IMAGE);
             if( imageName != null )
                 info.setChildrenNodeImage(IconUtils.getImageIcon(path, imageName));
@@ -1186,7 +1199,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         else if(cachingStrategy.equals( "soft" ))
             v_cache = new HashMapSoftValues();
         else if(cachingStrategy.equals( "hard" ))
-            v_cache = new HashMap<>();
+            v_cache = new ConcurrentHashMap<>();
         else if(cachingStrategy.equals( "none" ))
             v_cache = null;
         else

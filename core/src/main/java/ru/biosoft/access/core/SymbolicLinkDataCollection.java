@@ -1,7 +1,5 @@
 package ru.biosoft.access.core;
 
-import java.util.Properties;
-
 /**
  * DataCollection representing symbolic link to another DataCollection.
  */

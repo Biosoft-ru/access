@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull;
 
 import com.developmentontheedge.beans.Preferences;
 import ru.biosoft.jobcontrol.FunctionJobControl;
@@ -42,7 +41,8 @@ public interface DataElementImporter
      * @param log - logger the importer (must be not null)
      * @return created DataElement
      */
-    public DataElement doImport(@Nonnull DataCollection<?> parent, @Nonnull File file, String elementName, FunctionJobControl jobControl, Logger log) throws Exception;
+    public DataElement doImport(DataCollection<?> parent, File file, String elementName, FunctionJobControl jobControl, Logger log)
+            throws Exception;
 
     /**
      * Initializes importer

@@ -1,5 +1,7 @@
 package ru.biosoft.access.core;
 
+import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,15 +15,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull;
 import javax.swing.ImageIcon;
-
-import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 
 import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.LoggedClassCastException;
 import ru.biosoft.exception.LoggedClassNotFoundException;
-import ru.biosoft.util.IconUtils;
 
 public class DataCollectionInfo
 {
@@ -45,11 +43,11 @@ public class DataCollectionInfo
             {
                 String imageName = properties.getProperty(NODE_IMAGE);
                 if( imageName != null )
-                    nodeImage = ( IconUtils.getImageIcon(path, imageName) );
+                    nodeImage = ( Environment.getImageIcon( path, imageName ) );
 
                 imageName = properties.getProperty(CHILDREN_NODE_IMAGE);
                 if( imageName != null )
-                    childrenNodeImage = IconUtils.getImageIcon(path, imageName);
+                    childrenNodeImage = Environment.getImageIcon( path, imageName );
             }
 
             displayName = properties.getProperty(DISPLAY_NAME_PROPERTY);
@@ -166,7 +164,7 @@ public class DataCollectionInfo
         String iconLocation = Environment.getResourceLocation(className, path);
         getProperties().setProperty( NODE_IMAGE, iconLocation);
 
-        setNodeImage( IconUtils.getImageIcon( iconLocation ) );
+        setNodeImage( Environment.getImageIcon( iconLocation ) );
     }
 
     /** Image for DataCollection element nodes in repository pane. */
@@ -191,7 +189,7 @@ public class DataCollectionInfo
         if(iconLocation != null)
         {
             getProperties().setProperty(CHILDREN_NODE_IMAGE, iconLocation);
-            setChildrenNodeImage(IconUtils.getImageIcon(iconLocation));
+            setChildrenNodeImage( Environment.getImageIcon( iconLocation ) );
         }
     }
 
@@ -272,9 +270,7 @@ public class DataCollectionInfo
         // TODO
         // Bypass query system creation for local repository as
         // its config may include query system for derived module
-        //String pathStr = dc.getCompletePath().toString();
-        //boolean isProjects = "data/Collaboration".equals( pathStr ) || "data/Projects".equals( pathStr );
-        //if( properties == null || ( dc instanceof LocalRepository && !isProjects ) )
+        //if(  dc instanceof LocalRepository )
         //    return;
 
         // try initialize QuerySystem
@@ -354,7 +350,7 @@ public class DataCollectionInfo
         return properties.getProperty(key);
     }
     
-    public @Nonnull <T> Class<? extends T> getPropertyClass(String key, Class<T> superClass) throws DataElementReadException
+    public <T> Class<? extends T> getPropertyClass(String key, Class<T> superClass) throws DataElementReadException
     {
         Object property = properties.get(key);
         if(property == null)

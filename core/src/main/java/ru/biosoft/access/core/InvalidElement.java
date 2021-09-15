@@ -1,6 +1,5 @@
 package ru.biosoft.access.core;
 
-import ru.biosoft.access.core.DataElementGetException;
 import com.developmentontheedge.beans.annot.PropertyDescription;
 import com.developmentontheedge.beans.annot.PropertyName;
 

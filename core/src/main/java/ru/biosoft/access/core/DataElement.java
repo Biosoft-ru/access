@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
 
 import com.developmentontheedge.beans.annot.PropertyName;
 
@@ -34,7 +33,7 @@ public interface DataElement
     }
 
     @SuppressWarnings ( "unchecked" )
-    default @Nonnull <T extends DataElement> T cast(@Nonnull Class<T> clazz)
+    default <T extends DataElement> T cast(Class<T> clazz)
     {
         if( !clazz.isInstance( this ) )
         {
@@ -50,11 +49,10 @@ public interface DataElement
 
     /**
      * @return Stream of parents starting from immediate parent, then grandparent and so on
-     * TODO fix fro StreamEx to Stream
      */
     default Stream<DataCollection<?>> parents()
     {
-        List<DataCollection<?>> parents = new ArrayList();
+        List<DataCollection<?>> parents = new ArrayList<>();
         DataCollection<?> parent = getOrigin();
         while( parent != null )
         {

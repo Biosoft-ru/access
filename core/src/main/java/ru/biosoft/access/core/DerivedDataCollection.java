@@ -1,16 +1,18 @@
 package ru.biosoft.access.core;
 
+import static ru.biosoft.access.core.DataCollectionConfigConstants.CONFIG_PATH_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.FILE_PATH_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.NEXT_CONFIG;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.PLUGINS_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.PRIMARY_COLLECTION;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-
 import ru.biosoft.exception.ExceptionRegistry;
-
-import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 
 /**
  * General class for derived data collection.
@@ -76,15 +78,16 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
             if( nextFile != null )
             {
                 nextFile = nextFile.trim();
-                
+                //TODO: before it was ExProperties
+                //Do we have any non-path configPath variables
+                //PluginEntry nextConfig = ApplicationUtils.resolvePluginPath( configPath ).child( nextFile );
                 FileInputStream stream = new FileInputStream(configPath + "/" + nextFile);
                 nextProperties = new Properties();
                 nextProperties.load(stream);
                 stream.close();
 
-                // Pending is it needed?
-                //if( nextProperties.get(DataCollection.CONFIG_PATH_PROPERTY) == null )
-                //    nextProperties.put(DataCollection.CONFIG_PATH_PROPERTY, configPath);
+                if( nextProperties.get( CONFIG_PATH_PROPERTY ) == null )
+                    nextProperties.put( CONFIG_PATH_PROPERTY, configPath );
 
                 if( nextProperties.get(FILE_PATH_PROPERTY) == null )
                     nextProperties.put(FILE_PATH_PROPERTY, filePath);
@@ -94,6 +97,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
                 {
                     if( nextProperties.containsKey(PLUGINS_PROPERTY) )
                     {
+                        //TODO: distinct
                         plugins += ";" + nextProperties.getProperty(PLUGINS_PROPERTY);
                     }
                     nextProperties.put(PLUGINS_PROPERTY, plugins);
@@ -168,7 +172,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      * @return Type of data elements stored in the primary data collection.
      */
     @Override
-    public @Nonnull Class<? extends DataElement> getDataElementType()
+    public Class<? extends DataElement> getDataElementType()
     {
         return doGetPrimaryCollection().getDataElementType();
     }
@@ -219,6 +223,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
         return contains(de.getName());
     }
     
+    protected final Object nameLock = new Object();
     protected List<String> sortedNames = null;
     /**
      * Calls {@link DataCollection#getNameList()} method of primary data collection
@@ -226,13 +231,19 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      * @return primary data collection name list.
      */
     @Override
-    public @Nonnull List<String> getNameList()
+    public List<String> getNameList()
     {
         List<String> names = primaryCollection.getNameList();
-        if(sortedNames == null || sortedNames.size() != names.size())
+        if( sortedNames == null || sortedNames.size() != names.size() )
         {
-            sortedNames = new ArrayList<>( names ); // copy namelist if returned one was internal or unmodified
-            sortNameList(sortedNames);
+            synchronized( nameLock )
+            {
+                if( sortedNames == null || sortedNames.size() != names.size() )
+                {
+                    sortedNames = new ArrayList<>( names ); // copy namelist if returned one was internal or unmodified
+                    sortNameList( sortedNames );
+                }
+            }
         }
         return sortedNames;
     }
@@ -259,7 +270,10 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     protected void doPut(T1 element, boolean isNew) throws Exception
     {
         doGetPrimaryCollection().put((T2)element);
-        sortedNames = null;
+        synchronized( nameLock )
+        {
+            sortedNames = null;
+        }
     }
 
     /**
@@ -294,7 +308,10 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
             }
         }
         doGetPrimaryCollection().remove(name);
-        sortedNames = null;
+        synchronized( nameLock )
+        {
+            sortedNames = null;
+        }
     }
 
     /**

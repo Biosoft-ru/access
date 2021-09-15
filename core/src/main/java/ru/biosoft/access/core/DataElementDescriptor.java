@@ -107,4 +107,46 @@ public class DataElementDescriptor
         return value;
     }*/
     
+    public String getIconId()
+    {
+        return "icon";
+    }
+    //TODO: new
+    /*
+     * public String getIconId()
+    {
+        String value = getValue( DataCollectionConfigConstants.NODE_IMAGE );
+        if( value == null )
+        {
+            ReferenceType subType = getReferenceType();
+            if( subType != null )
+                value = subType.getIconId();
+        }
+        if( value == null )
+            value = IconFactory.getClassIconId(getType());
+        String customImageLoaderClass = getValue( CustomImageLoader.DATA_COLLECTION_PROPERTY );
+        if(customImageLoaderClass != null && value != null)
+        {
+            int colonIdx = value.indexOf( ':' );
+            if(colonIdx > -1)
+            {
+                String prefix = value.substring( 0, colonIdx );
+                String suffix = value.substring( colonIdx + 1 );
+                value = prefix + ":" + customImageLoaderClass + "?" + suffix;
+            }
+            else
+            {
+                value = customImageLoaderClass + "?" + value;    
+            }
+        }
+        return value;
+    }
+    
+     */
+
+    public Map<String, String> cloneProperties()
+    {
+        return new HashMap<String, String>( properties );
+    }
+
 }
