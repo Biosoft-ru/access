@@ -1,5 +1,16 @@
 package ru.biosoft.access.core;
 
+import static ru.biosoft.access.core.DataCollectionConfigConstants.CACHING_STRATEGY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.CHILDREN_NODE_IMAGE;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.CONFIG_PATH_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.DATA_COLLECTION_LISTENER;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.DATA_ELEMENT_CLASS_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.FILE_PATH_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.IS_ROOT;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.MUTABLE;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.NAME_PROPERTY;
+import static ru.biosoft.access.core.DataCollectionConfigConstants.NODE_IMAGE;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
@@ -13,21 +24,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.swing.event.EventListenerList;
+
+import com.developmentontheedge.beans.DynamicPropertySet;
+import com.developmentontheedge.beans.PropertiesDPS;
 
 import ru.biosoft.exception.ExceptionRegistry;
 import ru.biosoft.exception.InternalException;
 import ru.biosoft.exception.LoggedException;
-import ru.biosoft.util.IconUtils;
-
-import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
 import ru.biosoft.util.HashMapSoftValues;
 import ru.biosoft.util.HashMapWeakValues;
+import ru.biosoft.util.IconUtils;
 import ru.biosoft.util.LazyValue;
 import ru.biosoft.util.ReadAheadIterator;
-
-import com.developmentontheedge.beans.PropertiesDPS;
-import com.developmentontheedge.beans.DynamicPropertySet;
 
 /**
  * This abstract class provides default implementations for most of
@@ -245,7 +255,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @return Type of DataElements stored in the data collection.
      */
     @Override
-    public Class<? extends DataElement> getDataElementType()
+    public @Nonnull Class<? extends DataElement> getDataElementType()
     {
         try
         {
@@ -650,7 +660,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     //
 
     @Override
-    public Iterator<T> iterator()
+    public @Nonnull Iterator<T> iterator()
     {
         if(!isValid())
             return Collections.<T>emptyList().iterator();
@@ -664,7 +674,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @param dc DataCollection to create iterator for
      * @return created Iterator
      */
-    public static
+    public static @Nonnull
     <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc)
     {
         return createDataCollectionIterator(dc, dc.getNameList().iterator());
@@ -676,8 +686,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @param nameIterator iterator which returns names
      * @return created Iterator
      */
-    public static <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc,
-            final Iterator<String> nameIterator)
+    public static @Nonnull <T extends DataElement> Iterator<T> createDataCollectionIterator(final DataCollection<T> dc, final Iterator<String> nameIterator)
     {
         return new ReadAheadIterator<T>()
         {
@@ -753,7 +762,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     private DataElementPath completeName = null;
     @Override
-    public DataElementPath getCompletePath()
+    public @Nonnull DataElementPath getCompletePath()
     {
         if( completeName == null )
         {

@@ -16,7 +16,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import one.util.streamex.StreamEx;
+import javax.annotation.Nonnull;
+
 import ru.biosoft.exception.ExceptionRegistry;
 
 /**
@@ -181,7 +182,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      * @return Type of data elements stored in the primary data collection.
      */
     @Override
-    public Class<? extends DataElement> getDataElementType()
+    public @Nonnull Class<? extends DataElement> getDataElementType()
     {
         return doGetPrimaryCollection().getDataElementType();
     }
@@ -240,7 +241,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      * @return primary data collection name list.
      */
     @Override
-    public List<String> getNameList()
+    public @Nonnull List<String> getNameList()
     {
         List<String> names = primaryCollection.getNameList();
         if( sortedNames == null || sortedNames.size() != names.size() )

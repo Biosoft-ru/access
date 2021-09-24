@@ -1,5 +1,7 @@
 package ru.biosoft.access.core;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import ru.biosoft.exception.LoggedClassCastException;
 import ru.biosoft.exception.LoggedClassNotFoundException;
@@ -15,24 +17,22 @@ public interface ClassLoading
     /**
      * Loads {@link Class} with the specified name.
      */
-    public Class<?> loadClass(String className) throws LoggedClassNotFoundException;
+    public @Nonnull Class<?> loadClass(@Nonnull String className) throws LoggedClassNotFoundException;
 
     /**
      * Loads {@link Class} with the specified name and necessary plugins.
      */
-    public Class<?> loadClass(String className, String pluginNames) throws LoggedClassNotFoundException;
+    public @Nonnull Class<?> loadClass(String className, @CheckForNull String pluginNames) throws LoggedClassNotFoundException;
 
-    public <T> Class<? extends T> loadClass(String className, Class<T> superClass)
-            throws LoggedClassNotFoundException, LoggedClassCastException;
+    public @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, @Nonnull Class<T> superClass) throws LoggedClassNotFoundException, LoggedClassCastException;
 
-    public <T> Class<? extends T> loadClass(String className, String pluginNames, Class<T> superClass)
-            throws LoggedClassNotFoundException, LoggedClassCastException;
+    public @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass) throws LoggedClassNotFoundException, LoggedClassCastException;
     
     /**
      * Returns absolute resource location by class and location relative to class
      * 
      */
-    public String getResourceLocation(Class<?> clazz, String resource);
+    public @Nonnull String getResourceLocation(Class<?> clazz, String resource);
 
     public String getClassTitle(Class<?> clazz);
 
@@ -74,7 +74,7 @@ public interface ClassLoading
 //    // Plugins
 //    // 
 //    
-//    public  <T> Class<? extends T> loadSubClass( String className, String pluginNames,  Class<T> superClass) throws BiosoftNoClassException, LoggedClassCastException;
+//    public @Nonnull <T> Class<? extends T> loadSubClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass) throws BiosoftNoClassException, LoggedClassCastException;
 //    
 //
 //

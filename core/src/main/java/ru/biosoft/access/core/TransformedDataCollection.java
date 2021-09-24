@@ -3,6 +3,7 @@ package ru.biosoft.access.core;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
 
 /**
  *
@@ -87,7 +88,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
      * @return transformer output element
      */
     @Override
-    public Class<? extends DataElement> getDataElementType()
+    public @Nonnull Class<? extends DataElement> getDataElementType()
     {
         return outputType;
     }
@@ -150,7 +151,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
 
     ///////////////////////////////////////////////////////////////////////////
     @Override
-    public Iterator<T2> iterator()
+    public @Nonnull Iterator<T2> iterator()
     {
         return new MIterator();
     }

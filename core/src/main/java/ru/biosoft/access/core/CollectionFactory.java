@@ -14,6 +14,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.CheckForNull;
 import javax.imageio.ImageIO;
 
 import static ru.biosoft.access.core.DataCollectionConfigConstants.*;
@@ -129,7 +131,7 @@ public class CollectionFactory
         return currentPaths.get().contains( completeName );
     }
     
-    static public DataElement getDataElement(String completeName)
+	static public @CheckForNull DataElement getDataElement(String completeName)
 	{
 		return getDataElement( completeName, false );
 	}
@@ -142,7 +144,7 @@ public class CollectionFactory
     * @param completeName complete name
     * @return named DataCollection or null otherwise
     */
-    static public DataCollection getDataCollection(String completeName)
+   static public @CheckForNull DataCollection getDataCollection(String completeName)
    {
        DataElement de = getDataElement(completeName);
        if( de instanceof DataCollection )
@@ -162,7 +164,7 @@ public class CollectionFactory
      * see #getDataCollection(String)
      * @see DataCollection#getCompletePath()
      */
-    static public DataElement getDataElement(String completeName, boolean followSymLinks)
+    static public @CheckForNull DataElement getDataElement(String completeName, boolean followSymLinks)
 	{
 		try
 		{
@@ -177,7 +179,7 @@ public class CollectionFactory
 		}
 	}
 
-    static public DataElement getDataElementChecked(String completeName, boolean followSymLinks) throws RepositoryException
+    static public @Nonnull DataElement getDataElementChecked(String completeName, boolean followSymLinks) throws RepositoryException
     {
         if( completeName.isEmpty() )
             throw new DataElementNotFoundException( DataElementPath.EMPTY_PATH );
@@ -260,7 +262,7 @@ public class CollectionFactory
     /**
     * Creates {@link DataCollection} with the specified parent and properties.
     */
-    static public DataCollection createCollection(DataCollection<?> parent, Properties properties)
+    static public @Nonnull DataCollection createCollection(DataCollection<?> parent, Properties properties)
    {
        String className = properties.getProperty(CLASS_PROPERTY);
        DataElementPath childPath = DataElementPath.create(parent, properties.getProperty(NAME_PROPERTY, ""));
@@ -404,7 +406,7 @@ public class CollectionFactory
 //    /**
 //     * @deprecated use DataElement.cast(clazz)
 //     */
-//    static public  <T extends DataElement> T castDataElement(DataElement de,  Class<T> clazz)
+//    static public @Nonnull <T extends DataElement> T castDataElement(DataElement de, @Nonnull Class<T> clazz)
 //    {
 //        return de.cast( clazz );
 //    }
@@ -464,7 +466,7 @@ public class CollectionFactory
 //        return findDataCollections( root, wantedType, -1 );
 //    }
 //
-//    static public  <T extends DataElement> T getDataElement(String relativeName, DataCollection ancestor,  Class<T> clazz)
+//    static public @Nonnull <T extends DataElement> T getDataElement(String relativeName, DataCollection ancestor, @Nonnull Class<T> clazz)
 //            throws BiosoftRepositoryException
 //    {
 //        DataElement de = null;
@@ -588,7 +590,7 @@ public class CollectionFactory
 //    /**
 //     * Returns complete name of DataElement relative its ancestor.
 //     */
-//    public static String getRelativeName(DataElement child,  DataCollection<?> ancestor)
+//    public static String getRelativeName(DataElement child, @Nonnull DataCollection<?> ancestor)
 //    {
 //        StringBuilder buffer = new StringBuilder( DataElementPath.escapeName( child.getName() ) );
 //        DataCollection<?> parent = child.getOrigin();
@@ -781,12 +783,12 @@ public class CollectionFactory
 //     * @return databases collection
 //     */
 //    @SuppressWarnings ( {"unchecked", "rawtypes"} )
-//    public static  DataCollection<DataCollection<?>> getDatabases()
+//    public static @Nonnull DataCollection<DataCollection<?>> getDatabases()
 //    {
 //        return (DataCollection)DataElementPath.create( "databases" ).getDataCollection( DataCollection.class );
 //    }
 //
-//    public static void save( DataElement de) throws DataElementPutException
+//    public static void save(@Nonnull DataElement de) throws DataElementPutException
 //    {
 //        DataElementPath.create( de ).save( de );
 //    }

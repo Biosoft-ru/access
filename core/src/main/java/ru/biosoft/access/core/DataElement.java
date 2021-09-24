@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 
 import com.developmentontheedge.beans.annot.PropertyName;
 
@@ -33,7 +34,7 @@ public interface DataElement
     }
 
     @SuppressWarnings ( "unchecked" )
-    default <T extends DataElement> T cast(Class<T> clazz)
+    default @Nonnull <T extends DataElement> T cast(@Nonnull Class<T> clazz)
     {
         if( !clazz.isInstance( this ) )
         {

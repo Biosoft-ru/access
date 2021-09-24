@@ -1,5 +1,6 @@
 package ru.biosoft.access.core.filter;
 
+import javax.annotation.Nonnull;
 
 import ru.biosoft.access.core.DataElement;
 
@@ -11,12 +12,12 @@ public interface Filter<T extends DataElement>
     /**
      * Default filter that accept any data element.
      */
-    Filter<DataElement> INCLUDE_ALL_FILTER = new IncludeAllFilter();
+    @Nonnull Filter<DataElement> INCLUDE_ALL_FILTER = new IncludeAllFilter();
 
     /**
      * Default filter that accept nothing.
      */
-    Filter<DataElement> INCLUDE_NONE_FILTER = new IncludeNoneFilter();
+    @Nonnull Filter<DataElement> INCLUDE_NONE_FILTER = new IncludeNoneFilter();
 
     /** Indicates whether a filter should be used. */
     boolean isEnabled();

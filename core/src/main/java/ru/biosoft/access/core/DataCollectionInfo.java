@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
 import javax.swing.ImageIcon;
 
 import ru.biosoft.exception.ExceptionRegistry;
@@ -350,7 +351,7 @@ public class DataCollectionInfo
         return properties.getProperty(key);
     }
     
-    public <T> Class<? extends T> getPropertyClass(String key, Class<T> superClass) throws DataElementReadException
+    public @Nonnull <T> Class<? extends T> getPropertyClass(String key, Class<T> superClass) throws DataElementReadException
     {
         Object property = properties.get(key);
         if(property == null)

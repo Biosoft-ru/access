@@ -3,6 +3,8 @@ package ru.biosoft.access.core;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import ru.biosoft.exception.LoggedClassCastException;
 import ru.biosoft.exception.LoggedClassNotFoundException;
@@ -29,7 +31,7 @@ public class Environment
      * Loads {@link Class} with the specified name.
      * @see ClassLoading
      */
-    public static Class<?> loadClass(String className) throws LoggedClassNotFoundException
+    public static Class<?> loadClass(@Nonnull String className) throws LoggedClassNotFoundException
     {
     	return classLoading.loadClass(className);
     }
@@ -38,18 +40,18 @@ public class Environment
      * Loads {@link Class} with the specified name and necessary plugins.
      * @see ClassLoading
      */
-    public static Class<?> loadClass(String className, String pluginNames) throws LoggedClassNotFoundException
+    public static Class<?> loadClass(@Nonnull String className, @CheckForNull String pluginNames) throws LoggedClassNotFoundException
     {
     	return classLoading.loadClass(className, pluginNames);
     }
 
-    public static <T> Class<? extends T> loadClass(String className, Class<T> superClass)
+    public static @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, @Nonnull Class<T> superClass)
             throws LoggedClassNotFoundException, LoggedClassCastException
     {
     	return classLoading.loadClass(className, superClass);
     }
     
-    public static <T> Class<? extends T> loadClass(String className, String pluginNames, Class<T> superClass)
+    public static @Nonnull <T> Class<? extends T> loadClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass)
             throws LoggedClassNotFoundException, LoggedClassCastException
     {
     	return classLoading.loadClass(className, pluginNames, superClass);
@@ -64,7 +66,7 @@ public class Environment
     /**
      * Returns absolute resource location by class and location relative to class.
      */
-    public static String getResourceLocation(Class<?> clazz, String resource)
+    public static @Nonnull String getResourceLocation(Class<?> clazz, String resource)
     {
     	return classLoading.getResourceLocation(clazz, resource);
     }
