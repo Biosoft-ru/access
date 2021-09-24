@@ -44,9 +44,9 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      *
      * Obligatory properties are
      * <ul>
-     * <li>{@link #NAME}</li>
-     * <li>{@link #PRIMARY_COLLECTION}</li>
-     * <li>{@link #FILTER_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#NAME_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#PRIMARY_COLLECTION}</li>
+     * <li>{@link DataCollectionConfigConstants#FILTER_PROPERTY}</li>
      * </ul>
      *
      * @param parent
@@ -125,10 +125,10 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
     /**
      * Constructs DerivedDataCollection with the parent, name and primary data collection.
      *
-     * @param parent parent for this data collection.
-     * @param parent name of this data collection.
-     * @param primaryDC primary data collection.
-     * @param properties Properties to initialise {@link DataCollectionInfo}. Can be null.
+     * @param parent Parent for this data collection.
+     * @param name Name of this data collection.
+     * @param primaryDC Primary data collection.
+     * @param properties Properties to initialize {@link DataCollectionInfo}. Can be null.
      */
     public DerivedDataCollection(DataCollection<?> parent, String name, DataCollection<T2> primaryDC, Properties properties)
     {
@@ -289,7 +289,7 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
      * Calls {@link DataCollection#remove(String)} of primary collection.
      * Remove the specified data element from the primary collection.
      *
-     * @param element specified data element
+     * @param name Name of specified data element
      * @exception Exception If any errors
      * @todo  close()  in this method is misplaced. It is not cool solution !!!
      */

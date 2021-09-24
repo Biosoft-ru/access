@@ -4,8 +4,8 @@ package ru.biosoft.access.core;
  * Exception for canceling data collection operation.
  * Throws by data collection listener.
  * <ul>
- *  <li>{@link ru.biosoft.access.AbstractDataCollection#put(DataElement)}</li>
- *  <li>{@link ru.biosoft.access.AbstractDataCollection#remove(String)}</li>
+ *  <li>{@link AbstractDataCollection#put(DataElement)}</li>
+ *  <li>{@link AbstractDataCollection#remove(String)}</li>
  *  </ul>
 
  * @see DataCollectionEvent

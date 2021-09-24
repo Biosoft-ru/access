@@ -108,8 +108,7 @@ public class DataCollectionEvent
      *            <li>{@link #ELEMENT_ADDED}</li>
      *            <li>{@link #ELEMENT_REMOVED}</li>
      *            </ul>
-     * @param dataElement
-     *            changed,removed or added element
+     * @param name Name of changed,removed or added element
      */
     public DataCollectionEvent ( Object source, int type, DataCollection owner, String name, DataCollectionEvent primaryEvent )
     {

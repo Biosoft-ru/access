@@ -152,16 +152,16 @@ public class CollectionFactory
    }
    
 	/**
-	 * Returns the DataElement with the specified name.
-	 * 
-	 * @param completeName - complete DataElement name in CollectionFactory tree <br>
-	 * example: localhost/matrices/matrixlib.TransformedDataCollection/V$MYOD_01
-	 *
-	 * @return the DataElement with the specified name.
-	 * @see DataElement
-	 * see #getDataCollection(String)
-	 * @see ru.biosoft.access.DataCollection#getCompletePath()
-	 */
+     * Returns the DataElement with the specified name.
+     * 
+     * @param completeName - complete DataElement name in CollectionFactory tree <br>
+     * example: localhost/matrices/matrixlib.TransformedDataCollection/V$MYOD_01
+     *
+     * @return the DataElement with the specified name.
+     * @see DataElement
+     * see #getDataCollection(String)
+     * @see DataCollection#getCompletePath()
+     */
     static public DataElement getDataElement(String completeName, boolean followSymLinks)
 	{
 		try

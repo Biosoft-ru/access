@@ -27,7 +27,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * Constructor to be used by {@link CollectionFactory} to create VectorDataCollection.
      *
      * <ul>Required properties.
-     * <li>{@link ru.biosoft.access.DataCollection#NAME_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#NAME_PROPERTY}</li>
      * </ul>
      *
      * @param parent     parent DataCollection
@@ -43,7 +43,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * Constructs data collection with specified name and parent.
      *
      * @param parent Parent for this data collection.
-     * @param parent name of this data collection.
+     * @param name Name of this data collection.
      * @param properties Properties to initialise {@link DataCollectionInfo}. Can be null.
      */
     public VectorDataCollection(String name, DataCollection<?> parent, Properties properties)
@@ -73,7 +73,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
     }
 
     /**
-     * Returns the number of {@link ru.biosoft.access.DataElement data elements} in this data collection.
+     * Returns the number of {@link ru.biosoft.access.core.DataElement data elements} in this data collection.
      *
      * @return the number of data elements in this data collection.
      */
@@ -104,7 +104,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * Returns an array containing all of the elements in this VectorDataCollection in the correct order;
      * the runtime type of the returned array is that of the specified array.
      *
-     * @see Vector.toArray(Object[] a)
+     * @see Vector#toArray(Object[] a)
      */
     public T[] toArray(T[] a)
     {
@@ -186,7 +186,7 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
      * @param isNew indicates whether this dataElement is new.
      * @throws IllegalArgumentException if dataElement is <tt>null</tt>.
      * @throws Exception If any error occurs.
-     * @see ru.biosoft.access.AbstractDataCollection#put(DataElement)
+     * @see AbstractDataCollection#put(DataElement)
      */
     @Override
     protected void doPut(T dataElement, boolean isNew) throws IllegalArgumentException
@@ -205,9 +205,9 @@ public class VectorDataCollection<T extends DataElement> extends AbstractDataCol
     /**
      * Removes the specified data element from this data collection.
      *
-     * @param de specified data element
+     * @param name Name of specified data element
      * @throws Exception If any error occurs.
-     * @see ru.biosoft.access.AbstractDataCollection#remove(String)
+     * @see AbstractDataCollection#remove(String)
      */
     @Override
     protected void doRemove(String name) throws Exception

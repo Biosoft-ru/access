@@ -6,7 +6,7 @@ package ru.biosoft.access.core;
  * <p>Conventions:
  * <ul>
  *   <li>QuerySystem should has public constructor with {@link DataCollection} argument
- *   This constructor is used by {@link DataCollectioInfo} to create QuerySystem. </li>
+ *   This constructor is used by {@link DataCollectionInfo} to create QuerySystem. </li>
  *   <br>Example:
  *   <pre>public class SequenceQuerySystem implements QuerySystem
  *   {

@@ -98,7 +98,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
      *
      * @param element The put DataElement
      * @exception Exception If any errors.
-     * @see ru.biosoft.access.AbstractDataCollection#put(DataElement)
+     * @see AbstractDataCollection#put(DataElement)
      */
     @Override
     public void doPut(T2 element, boolean isNew) throws Exception
@@ -116,7 +116,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
      * to get the specified by name data element from the collection.
      * @param name The name of data element
      * @exception Exception If any errors.
-     * @see ru.biosoft.access.AbstractDataCollection#put(DataElement)
+     * @see AbstractDataCollection#put(DataElement)
      */
     @Override
     public T2 doGet(String name) throws Exception

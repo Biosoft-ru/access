@@ -31,7 +31,7 @@ public interface SortableDataCollection<T extends DataElement> extends DataColle
      * @param direction sorting direction (true = ascending)
      * @param from from which element to iterate
      * @param to to which element to iterate
-     * @return
+     * @return sorted iterator
      */
     public Iterator<T> getSortedIterator(String field, boolean direction, int from, int to);
 }

@@ -45,8 +45,8 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
      *
      * Obligatory properties are
      * <ul>
-     * <li>{@link #NAME}</li>
-     * <li>{@link #PRIMARY_COLLECTION}</li>
+     * <li>{@link ru.biosoft.access.core.DataCollectionConfigConstants#NAME_PROPERTY}</li>
+     * <li>{@link ru.biosoft.access.core.DataCollectionConfigConstants#PRIMARY_COLLECTION}</li>
      * <li>{@link #FILTER_PROPERTY}</li>
      * </ul>
      *
@@ -81,10 +81,10 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
      * Creates FilteredDataCollection with the specified parent, name,
      * primary data collection and filter.
      *
-     * @param parent parent for this data collection.
-     * @param parent name of this data collection.
-     * @param primaryCollection primary data collection.
-     * @param filter filter to be applied to primary data collection.
+     * @param parent Parent for this data collection.
+     * @param name Name of this data collection.
+     * @param primaryCollection Primary data collection.
+     * @param filter Filter to be applied to primary data collection.
      * @param properties Properties to initialize {@link DataCollectionInfo}. Can be null.
      */
     public FilteredDataCollection(DataCollection<?> parent, String name, DataCollection<T> primaryCollection, Filter<? super T> filter,
@@ -126,10 +126,10 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         if( filter==Filter.INCLUDE_ALL_FILTER )
         {
             filteredNames = new ArrayList<>();
-            List names = primaryCollection.getNameList();
+            List<String> names = primaryCollection.getNameList();
             if( names==null )
                 return;
-            Iterator iter = names.iterator();
+            Iterator<String> iter = names.iterator();
             while( iter.hasNext() )
             {
                 filteredNames.add( (String)iter.next() );
@@ -155,7 +155,7 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
             if( QueryFilter.class.isAssignableFrom(filter.getClass()) )
             {
                 filteredNames = new ArrayList<>();
-                List<String> list = ( (QueryFilter)filter ).doQuery( primaryCollection );
+                List<String> list = ( (QueryFilter<?>)filter ).doQuery( primaryCollection );
                 
                 if( jobControl!=null )
                 {
@@ -430,7 +430,7 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
     }
     /**
      * @todo URGENT Use filter
-     * @peding firing events removed because of endless loop, should be checked
+     * @pending firing events removed because of endless loop, should be checked
      */
     @Override
     public void elementWillChange(DataCollectionEvent event) throws DataCollectionVetoException, Exception
@@ -442,7 +442,7 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
     }
     /**
      * @todo URGENT Use filter
-     * @peding firing events removed because of endless loop, should be checked
+     * @pending firing events removed because of endless loop, should be checked
      */
     @Override
     public void elementChanged(DataCollectionEvent event) throws Exception

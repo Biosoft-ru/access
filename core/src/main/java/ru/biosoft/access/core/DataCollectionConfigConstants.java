@@ -59,7 +59,7 @@ public class DataCollectionConfigConstants
     /** Property for storing suffix of {@link ru.biosoft.access.FileEntryCollection} data collections */
     public static final String DEFAULT_FORMAT_CONFIG_SUFFIX = ".format.config";
 
-    /** Property for storing suffix of {@link ru.biosoft.access.FilteredDataCollection} data collections */
+    /** Property for storing suffix of {@link ru.biosoft.access.core.filter.FilteredDataCollection} data collections */
     public static final String DEFAULT_FILTER_CONFIG_SUFFIX = ".filter.config";
 
 
@@ -88,12 +88,12 @@ public class DataCollectionConfigConstants
     /*  Property for storing of primary data collection for derivedDataCollection */
     public static final String PRIMARY_COLLECTION = "primaryCollection";
 
-    /** Property for storing class of transformer for {@link ru.biosoft.access.TransformedDataCollection} collections  */
+    /** Property for storing class of transformer for {@link TransformedDataCollection} collections  */
     public static final String TRANSFORMER_CLASS = "transformer";
     
     /**
      * Property for storing  name of primary data collection config file. It is used for
-     * {@link ru.biosoft.access.TransformedDataCollection}'s to specify primary data collection
+     * {@link TransformedDataCollection}'s to specify primary data collection
      */
     public static final String NEXT_CONFIG = "nextConfig";
     

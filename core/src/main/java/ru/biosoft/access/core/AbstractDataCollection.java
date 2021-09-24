@@ -39,10 +39,10 @@ import com.developmentontheedge.beans.DynamicPropertySet;
  * AbstractDataCollection you need only provide implementations for the
  * following methods:<br>
  * {@link #getNameList()}<br>
- * {@link #doGet()}<br>
+ * {@link #doGet(String)}<br>
  * if concrete DataColection mutable, then next methods should be implemented<br>
- * {@link #doPut(DataElement)}<br>
- * {@link #doRemove(DataElement)}<br>
+ * {@link #doPut(DataElement,boolean)}<br>
+ * {@link #doRemove(String)}<br>
  */
 abstract public class AbstractDataCollection<T extends DataElement> extends DataElementSupport implements DataCollection<T>
 {
@@ -74,14 +74,13 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      *
      * Makes info for this data collection.
      * <ul>Required properties
-     * <li>{@link ru.biosoft.access.DataCollection#NAME_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#NAME_PROPERTY}</li>
      * </ul>
      * <ul>Optional properties
-     * <li>{@link ru.biosoft.access.DataCollection#PATH_PROPERTY}</li>
-     * <li>{@link ru.biosoft.access.DataCollection#NODE_IMAGE}</li>
-     * <li>{@link ru.biosoft.access.DataCollection#CHILDREN_NODE_IMAGE}</li>
-     * <li>{@link ru.biosoft.access.DataCollection#NODE_VISIBLE}</li>
-     * <li>{@link ru.biosoft.access.DataCollection#CHILDREN_NODE_VISIBLE}</li>
+     * <li>{@link DataCollectionConfigConstants#CONFIG_PATH_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#FILE_PATH_PROPERTY}</li>
+     * <li>{@link DataCollectionConfigConstants#NODE_IMAGE}</li>
+     * <li>{@link DataCollectionConfigConstants#CHILDREN_NODE_IMAGE}</li>
      * </ul>
      *
      * @param parent Parent data collection.
@@ -102,11 +101,11 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     /**
      * Constructs data collection with specified name and parent.
      * This constructor can be used by subclasses if DataCollection is created without
-     * using {@link collectionFactory}.
+     * using {@link CollectionFactory}.
      *
+     * @param name name of this data collection.
      * @param parent Parent for this data collection.
-     * @param parent name of this data collection.
-     * @param properties Properties to initialise {@link DataCollectionInfo}. Can be null.
+     * @param properties Properties to initialize {@link DataCollectionInfo}. Can be null.
      */
     protected AbstractDataCollection(String name, DataCollection<?> parent, Properties properties)
     {
@@ -182,7 +181,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     /**
      * Register this DataCollection as root in {@link CollectionFactory#registerRoot}
-     * if {@link IS_ROOT} property is true;
+     * if {@link DataCollectionConfigConstants#IS_ROOT} property is true;
      */
     protected void registerRoot()
     {
@@ -269,7 +268,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     /**
      * Gets data collection info.
      * @return Data collection info.
-     * @see ru.biosoft.access.DataCollectionInfo
+     * @see DataCollectionInfo
      */
     @Override
     public DataCollectionInfo getInfo()
@@ -326,7 +325,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      *
      * @param name name of element whose presence in this data collection is to be tested.
      * @return <tt>true</tt> if this data collection contains the element with specified name.
-     * @see #contains(ru.biosoft.access.DataElement)
+     * @see #contains(ru.biosoft.access.core.DataElement)
      */
     @Override
     public boolean contains(String name)
@@ -412,7 +411,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * Puts to cache data element.
      *
      *
-     * @param element Stored data element
+     * @param de Stored data element
      * @see #put(DataElement)
      */
     protected void cachePut(T de)
@@ -435,7 +434,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     /**
      * Adds the specified data element to the collection.
      * Notifies all listeners if the data element was added or changed.
-     * <code>{@link #doPut(DataElement)}</code> method is used to put the data element.
+     * <code>{@link #doPut(DataElement,boolean)}</code> method is used to put the data element.
      * If the data collection previously contained the specified element,
      * the old value is replaced.<br>
      * Note that this implementation slow enough!!!
@@ -443,7 +442,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @return previous version of the data element, or null if there was no one.
      * @throws java.util.UnsupportedOperationException if the data collection is unmutable.
      * @throws java.lang.Exception If error occurred.
-     * @see #doPut(DataElement)
+     * @see #doPut(DataElement,boolean)
      * @see #isMutable()
      * @todo should check DataElement type
      */
@@ -526,9 +525,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     }
 
     /**
-     * Sends notification to the listeners before <code>{@link #doPut(DataElement)}</code> operation.
-     * If data collection contains the data element with specified name, <code>{@link ru.biosoft.access.DataCollectionListener#elementWillChange(DataCollectionEvent )}</code>
-     * of listeners is called, or <code>{@link ru.biosoft.access.DataCollectionListener#elementWillAdd(DataCollectionEvent )}</code> otherwise
+     * Sends notification to the listeners before <code>{@link #doPut(DataElement,boolean)}</code> operation.
+     * If data collection contains the data element with specified name, <code>{@link DataCollectionListener#elementWillChange(DataCollectionEvent )}</code>
+     * of listeners is called, or <code>{@link DataCollectionListener#elementWillAdd(DataCollectionEvent )}</code> otherwise
      *
      *
      * @param dataElementName  name of added/changed DataElement.
@@ -546,9 +545,9 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     }
 
     /**
-     * Sends notification to the listeners after <code>{@link #doPut(DataElement)}</code> operation.
-     * If data collection contains the data element with specified name, <code>{@link ru.biosoft.access.DataCollectionListener#elementChanged(DataCollectionEvent )}</code>
-     * of listeners is called, or <code>{@link ru.biosoft.access.DataCollectionListener#elementAdded(DataCollectionEvent )}</code> otherwise
+     * Sends notification to the listeners after <code>{@link #doPut(DataElement,boolean)}</code> operation.
+     * If data collection contains the data element with specified name, <code>{@link DataCollectionListener#elementChanged(DataCollectionEvent )}</code>
+     * of listeners is called, or <code>{@link DataCollectionListener#elementAdded(DataCollectionEvent )}</code> otherwise
      *
      *
      * @param dataElementName  name of added/changed DataElement.
@@ -566,13 +565,13 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     /**
      * Removes the specified data element from the collection, if present.
      * Notifies all listeners if the data element was removed.
-     * <code>{@link #doRemove(ru.biosoft.access.DataElement)}</code> method is used to remove the data element.
+     * <code>{@link #doRemove(String)}</code> method is used to remove the data element.
      *
      * @param name
      * @exception UnsupportedOperationException If the data collection is unmutable.
      *
      * @exception Exception If any error.
-     * @see #doRemove(ru.biosoft.access.DataElement)
+     * @see #doRemove(String)
      * @see #isMutable()
      */
     @Override
@@ -789,7 +788,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     /**
      * Initialize logging.
-     * @see org.apache.log4j.Category
+     * @see java.util.logging.Logger
      */
     protected void initLog()
     {
@@ -847,7 +846,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * a data element is added to the collection.
      *
      * @param source the DataCollection that changed, typically "this".
-     * @param dataElement the new data element.
+     * @param dataElementName the new data element name.
      *
      * @see DataCollectionEvent
      */
@@ -966,7 +965,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     /**
      * Call {@link DataCollectionListener#elementWillRemove(DataCollectionEvent)} for all listeners.
      * @param source Source of event
-     * @param dataElement Data element which will be removed.
+     * @param dataElementName Name of data element which will be removed.
      * @throws DataCollectionVetoException If listener cancel removing of data element.
      * @throws Exception If error occurs.
      */
@@ -1007,7 +1006,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * a data element of the collection change.
      *
      * @param source the DataCollection that changed, typically "this".
-     * @param dataElement the changed data element.
+     * @param dataElementName Name of the changed data element.
      *
      * @see DataCollectionEvent
      */
@@ -1046,7 +1045,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * a data element is removed from the collection.
      *
      * @param source the DataCollection that changed, typically "this".
-     * @param dataElement the removed data element.
+     * @param dataElementName Name of the removed data element.
      *
      * @see DataCollectionEvent
      */
@@ -1176,7 +1175,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * to remove the specified data element from the collection.
      *
      * @throws UnsupportedOperationException Always .
-     * @see ru.biosoft.access.AbstractDataCollection#remove(String)
+     * @see #remove(String)
      */
     protected void doRemove(String name) throws Exception
     {

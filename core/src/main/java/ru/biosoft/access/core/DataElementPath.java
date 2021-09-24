@@ -237,7 +237,6 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * Fetches DataElement from repository.
      *
      * @return fetched DataElement or null if it doesn't exist or some error occurs
-     * @TODO rename method
      */
     public DataElement optDataElement()
     {
@@ -411,7 +410,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     /**
      * Creates path for child item to current path.
      *
-     * @param name - name of child item (may not exist). Null name is considered as empty name
+     * @param names - list of name slices of child item (may not exist). Null name is considered as empty name
      * @return created DataElementPath
      */
     public DataElementPath getChildPath(String ... names)

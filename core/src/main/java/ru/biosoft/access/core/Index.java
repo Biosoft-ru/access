@@ -14,8 +14,7 @@ public interface Index<T> extends Map<String, T>
     String DEFAULT_INDEX_NAME = "id";
 
     /**
-     * Return this index name
-     * @return
+     * @return this index name
      */
     String getName();
     
@@ -87,8 +86,8 @@ public interface Index<T> extends Map<String, T>
         /**
          * Construct new Index.
          *
-         * @param from the entry offset
-         * @param len the entry length
+         * @param index_from the entry offset
+         * @param index_length the entry length
          */
         public IndexEntry(long index_from, long index_length)
         {
@@ -101,8 +100,8 @@ public interface Index<T> extends Map<String, T>
             return 0;
         }
         /**
-         * Return string, that describes the index.
-         * Format: (from,len)
+         * @return string, that describes the index.
+         * Format: (index_from,index_length)
          * @todo LOW temporary!!!
          */
         @Override

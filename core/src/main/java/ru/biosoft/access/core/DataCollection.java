@@ -252,6 +252,7 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
     }
 
 
+    @SuppressWarnings ( "unchecked" )
     default <TT extends T> Stream<TT> stream(Class<TT> elementClass)
     {
         return (Stream<TT>) ( stream().filter( elementClass::isInstance ) );
