@@ -9,9 +9,14 @@ import static ru.biosoft.access.core.DataCollectionConfigConstants.PRIMARY_COLLE
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import one.util.streamex.StreamEx;
 import ru.biosoft.exception.ExceptionRegistry;
 
 /**
@@ -74,13 +79,15 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
             if( filePath == null || filePath.equals("") )
                 filePath = configPath;
 
-            Properties nextProperties = null;
-            if( nextFile != null )
+            if( nextFile != null && configPath == null )
             {
+                log.log( Level.SEVERE, "Config path is null in DerivedDataCollection" );
+            }
+
+            if( nextFile != null && configPath != null )
+            {
+                Properties nextProperties = null;
                 nextFile = nextFile.trim();
-                //TODO: before it was ExProperties
-                //Do we have any non-path configPath variables
-                //PluginEntry nextConfig = ApplicationUtils.resolvePluginPath( configPath ).child( nextFile );
                 FileInputStream stream = new FileInputStream(configPath + "/" + nextFile);
                 nextProperties = new Properties();
                 nextProperties.load(stream);
@@ -97,8 +104,10 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
                 {
                     if( nextProperties.containsKey(PLUGINS_PROPERTY) )
                     {
-                        //TODO: distinct
-                        plugins += ";" + nextProperties.getProperty(PLUGINS_PROPERTY);
+                        String oldPlugins = nextProperties.getProperty( PLUGINS_PROPERTY );
+                        plugins = Stream.of( oldPlugins, plugins ).filter( str -> str != null )
+                                .flatMap( str -> Arrays.stream( str.split( ";" ) ) ).sorted().distinct()
+                                .collect( Collectors.joining( ";" ) );
                     }
                     nextProperties.put(PLUGINS_PROPERTY, plugins);
                 }
