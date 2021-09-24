@@ -96,7 +96,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         initLog();
         
         preInit(properties);
-        initADC( properties );
+        init( properties );
     }
     
     /**
@@ -120,7 +120,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
         }
 
         preInit(properties);
-        initADC( properties );
+        init( properties );
     }
 
     /**
@@ -131,8 +131,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
     {}
 
     public static final String MANUALLY_INIT_DC_LISTENER = "manually-init-dc-listener";
-    //TODO: temporary renamed to avoid override with children's init methods that should be called after the parent initialization step
-    protected void initADC(Properties properties)
+
+    private void init(Properties properties)
     {
         //pending CONFIG_PATH_PROPERTY?
         path = properties.getProperty(CONFIG_PATH_PROPERTY, ".");
