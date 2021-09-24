@@ -34,6 +34,8 @@ public interface ClassLoading
      */
     public String getResourceLocation(Class<?> clazz, String resource);
 
+    public String getClassTitle(Class<?> clazz);
+
     /////////////////////////////////////////////////////////////	
 //    /**
 //     *  Get ClassLoader for class

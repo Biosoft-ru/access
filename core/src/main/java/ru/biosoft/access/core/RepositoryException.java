@@ -35,9 +35,6 @@ public abstract class RepositoryException extends LoggedException
     
     protected static String getClassTitle(Class<? extends DataElement> c)
     {
-    	// TODO
-    	//DataCollectionUtils.getClassTitle(clazz)
-    	
-    	return c.getSimpleName();
+        return Environment.getClassTitle( c );
     }
 }

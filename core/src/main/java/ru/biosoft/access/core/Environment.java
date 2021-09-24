@@ -29,7 +29,7 @@ public class Environment
      * Loads {@link Class} with the specified name.
      * @see ClassLoading
      */
-    static public Class<?> loadClass(String className) throws LoggedClassNotFoundException
+    public static Class<?> loadClass(String className) throws LoggedClassNotFoundException
     {
     	return classLoading.loadClass(className);
     }
@@ -38,23 +38,28 @@ public class Environment
      * Loads {@link Class} with the specified name and necessary plugins.
      * @see ClassLoading
      */
-    static public Class<?> loadClass(String className, String pluginNames) throws LoggedClassNotFoundException
+    public static Class<?> loadClass(String className, String pluginNames) throws LoggedClassNotFoundException
     {
     	return classLoading.loadClass(className, pluginNames);
     }
 
-    static public <T> Class<? extends T> loadClass(String className, Class<T> superClass)
+    public static <T> Class<? extends T> loadClass(String className, Class<T> superClass)
             throws LoggedClassNotFoundException, LoggedClassCastException
     {
     	return classLoading.loadClass(className, superClass);
     }
     
-    static public <T> Class<? extends T> loadClass(String className, String pluginNames, Class<T> superClass)
+    public static <T> Class<? extends T> loadClass(String className, String pluginNames, Class<T> superClass)
             throws LoggedClassNotFoundException, LoggedClassCastException
     {
     	return classLoading.loadClass(className, pluginNames, superClass);
     }
     
+    public static String getClassTitle(Class<? extends DataElement> clazz)
+    {
+        return classLoading.getClassTitle( clazz );
+    }
+
 
     /**
      * Returns absolute resource location by class and location relative to class.
@@ -122,5 +127,19 @@ public class Environment
             return iconManager.getImageIcon( imagename );
         else
             return IconUtils.getImageIcon( imagename );
+    }
+    public static String getClassIconId(Class<?> clazz)
+    {
+        if( iconManager != null )
+            return iconManager.getClassIconId( clazz );
+        else
+            return null;
+    }
+    public static String getDescriptorIconId(DataElementDescriptor descr)
+    {
+        if( iconManager != null )
+            return iconManager.getDescriptorIconId( descr );
+        else
+            return null;
     }
 }
