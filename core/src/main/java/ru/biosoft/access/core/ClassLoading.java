@@ -37,18 +37,18 @@ public interface ClassLoading
     public String getClassTitle(Class<?> clazz);
 
     /////////////////////////////////////////////////////////////	
-//    /**
-//     *  Get ClassLoader for class
-//     */
-//    public ClassLoader getClassLoader(Class<?> clazz);
-//    
-//    /**
-//     * @return the classLoader suitable to load any class from any plugin (via loadClass(String clazz))
-//     */
-//    public ClassLoader getClassLoader()
-//    {
-//        return classLoader;
-//    }
+    //    /**
+    //     *  Get ClassLoader for class
+    //     */
+    //    public ClassLoader getClassLoader(Class<?> clazz);
+    //    
+    //    /**
+    //     * @return the classLoader suitable to load any class from any plugin (via loadClass(String clazz))
+    //     */
+    //    public ClassLoader getClassLoader()
+    //    {
+    //        return classLoader;
+    //    }
 //
 //
 //    /**
@@ -78,17 +78,17 @@ public interface ClassLoading
 //    
 //
 //
-//    /**
-//     * Get plugin ID for loaded class
-//     */
-//    public String getPluginForClass(Class<?> clazz)
-//    {
-//        return getPluginForClass(clazz.getName());
-//    }
-//    
-//    /**
-//     * Get plugin ID for class by given class name
-//     */
-//    public String getPluginForClass(String className)
-//
+    /**
+     * Get plugin ID for loaded class
+     */
+    public default String getPluginForClass(Class<?> clazz)
+    {
+        return getPluginForClass( clazz.getName() );
+    }
+    
+    /**
+     * Get plugin ID for class by given class name
+     */
+    public String getPluginForClass(String className);
+
 }

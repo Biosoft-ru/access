@@ -71,6 +71,22 @@ public class Environment
     	return classLoading.getResourceLocation(clazz, resource);
     }
 
+    /**
+     * Get plugin ID for loaded class
+     */
+    public static String getPluginForClass(Class<?> clazz)
+    {
+        return classLoading.getPluginForClass( clazz.getName() );
+    }
+
+    /**
+     * Get plugin ID for class by given class name
+     */
+    public static String getPluginForClass(String className)
+    {
+        return classLoading.getPluginForClass( className );
+    }
+
 	////////////////////////////////////////////////////////////////////////////
 	// Extension registry
 	//
