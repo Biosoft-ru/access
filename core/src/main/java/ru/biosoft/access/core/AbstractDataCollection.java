@@ -174,7 +174,8 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
             {
                 Class<? extends DataCollectionListener> clazz = Environment.getListenerClassFromRegistry(properties.get(DATA_COLLECTION_LISTENER).toString());
                 if( clazz == null )
-                    throw new SecurityException("Listener class is not found in the registry: " + properties.get(DATA_COLLECTION_LISTENER));
+                    throw new ClassNotFoundException( "Listener class is not found in the registry: "
+                            + properties.get( DATA_COLLECTION_LISTENER ) + " while loading DataCollection " + this.getCompletePath() );
                 
                 addDataCollectionListener(clazz.getConstructor(QuerySystem.class).newInstance(getInfo().getQuerySystem()));
             }
