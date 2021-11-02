@@ -447,7 +447,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
         	return new String[0];
 
         //TODO: do no use LoggedException
-        String[] result = LoggedException.split(path, PATH_SEPARATOR_CHAR);
+        String[] result = split( path, PATH_SEPARATOR_CHAR );
         for(int i=0; i<result.length; i++)
         {
         	result[i] = unescapeName(result[i]);
@@ -784,5 +784,40 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
             } else if(result != null) result[j++] = curChar;
         }
         return result == null ? escapedName : new String(result, 0, j);
+    }
+
+    /**
+     * Works exactly like Pattern.compile(String.valueOf(delimiter), Pattern.LITERAL).split(string, -1),
+     * or like org.apache.commons.lang.StringUtils.splitPreserveAllTokens but faster
+     */
+    public static String[] split(String string, char delimiter)
+    {
+        int n = 1;
+        int i = 0;
+        while( true )
+        {
+            i = string.indexOf( delimiter, i );
+            if( i == -1 )
+                break;
+            n++;
+            i++;
+        }
+        if( n == 1 )
+            return new String[] {string};
+
+        String[] result = new String[n];
+        n = 0;
+        i = 0;
+        int start = 0;
+        while( true )
+        {
+            i = string.indexOf( delimiter, start );
+            if( i == -1 )
+                break;
+            result[n++] = string.substring( start, i );
+            start = i + 1;
+        }
+        result[n] = string.substring( start );
+        return result;
     }
 }

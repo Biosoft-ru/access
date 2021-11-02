@@ -91,8 +91,6 @@ public class Environment
 	// Extension registry
 	//
 
-    // TODO - check whether it is used
-    
     private static Map<String, Class<? extends DataCollectionListener>> dataCollectionListenersRegistry;
     public static void setDataCollectionListenersRegistry(Map<String, Class<? extends DataCollectionListener>> map)
     {
