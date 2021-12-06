@@ -87,6 +87,16 @@ public class Environment
         return classLoading.getPluginForClass( className );
     }
 
+    public static PluginEntry resolvePluginPath(String pluginPath)
+    {
+        return classLoading.resolvePluginPath( pluginPath );
+    }
+
+    public PluginEntry resolvePluginPath(String pluginPath, String parentPath)
+    {
+        return classLoading.resolvePluginPath( pluginPath, parentPath );
+    }
+
 	////////////////////////////////////////////////////////////////////////////
 	// Extension registry
 	//

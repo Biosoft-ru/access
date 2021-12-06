@@ -7,7 +7,9 @@ import static ru.biosoft.access.core.DataCollectionConfigConstants.PLUGINS_PROPE
 import static ru.biosoft.access.core.DataCollectionConfigConstants.PRIMARY_COLLECTION;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,10 +91,13 @@ public class DerivedDataCollection<T1 extends DataElement, T2 extends DataElemen
             {
                 Properties nextProperties = null;
                 nextFile = nextFile.trim();
-                FileInputStream stream = new FileInputStream(configPath + "/" + nextFile);
+                PluginEntry nextConfig = Environment.resolvePluginPath( configPath ).child( nextFile );
                 nextProperties = new Properties();
-                nextProperties.load(stream);
-                stream.close();
+                try (InputStream is = nextConfig.getInputStream();
+                        InputStreamReader reader = new InputStreamReader( is, StandardCharsets.UTF_8 ))
+                {
+                    nextProperties.load( reader );
+                }
 
                 if( nextProperties.get( CONFIG_PATH_PROPERTY ) == null )
                     nextProperties.put( CONFIG_PATH_PROPERTY, configPath );

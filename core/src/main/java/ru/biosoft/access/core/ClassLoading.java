@@ -36,48 +36,6 @@ public interface ClassLoading
 
     public String getClassTitle(Class<?> clazz);
 
-    /////////////////////////////////////////////////////////////	
-    //    /**
-    //     *  Get ClassLoader for class
-    //     */
-    //    public ClassLoader getClassLoader(Class<?> clazz);
-    //    
-    //    /**
-    //     * @return the classLoader suitable to load any class from any plugin (via loadClass(String clazz))
-    //     */
-    //    public ClassLoader getClassLoader()
-    //    {
-    //        return classLoader;
-    //    }
-//
-//
-//    /**
-//     * Returns URL pointing to the resource. Warning: this URL shouldn't be saved between launches, as it may contain temporary bundle ID
-//     */
-//    public static URL getResourceURL(Class<?> baseClass, String resource)
-//    {
-//        URL url = null;
-//        try
-//        {
-//            long id = Platform.getBundle(getPluginForClass(baseClass.getName())).getBundleId();
-//            url = new URL("bundleresource", String.valueOf(id), 0, resource.replaceFirst("\\/[^\\/]+$", "/"));
-//        }
-//        catch( Exception e )
-//        {
-//        }
-//        if( url == null )
-//            url = getClassLoader(baseClass).getResource(resource.replaceFirst("\\/[^\\/]+$", "/"));
-//        return url;
-//    }
-//
-//    // ////////////////////////////////////////////////////////////////////////
-//    // Plugins
-//    // 
-//    
-//    public @Nonnull <T> Class<? extends T> loadSubClass(@Nonnull String className, String pluginNames, @Nonnull Class<T> superClass) throws BiosoftNoClassException, LoggedClassCastException;
-//    
-//
-//
     /**
      * Get plugin ID for loaded class
      */
@@ -90,5 +48,17 @@ public interface ClassLoading
      * Get plugin ID for class by given class name
      */
     public String getPluginForClass(String className);
+
+    /**
+     * Resolves path to the plugin file resource
+     * @param pluginPath path like "ru.biosoft.access:resource"
+     * @return File object pointing to the resource
+     */
+    public default PluginEntry resolvePluginPath(String pluginPath)
+    {
+        return resolvePluginPath( pluginPath, "" );
+    }
+
+    public PluginEntry resolvePluginPath(String pluginPath, String parentPath);
 
 }
