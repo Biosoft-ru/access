@@ -19,7 +19,7 @@ import ru.biosoft.exception.MissingParameterException;
  * To construct the path object use <code>DataElementPath.create</code> method.</p>
  *
  * <p>If element name contains /, it will be replaced in path with \s
- * <br/>If element name contains \, it will be replaced in path with \\</p>
+ * <br>If element name contains \, it will be replaced in path with \\</p>
  *
  * <p>Use escapeName/unescapeName static methods for these transformations. </p>
  */

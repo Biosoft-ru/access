@@ -5,78 +5,52 @@
 
  <groupId>ru.biosoft</groupId>
  <artifactId>access</artifactId>
- <version>2.0.0</version>
+ <version>1.0.0</version>
  <packaging>pom</packaging>
  <url>http://biouml.org/</url>
 
+ <parent>
+  <groupId>ru.biosoft</groupId>
+  <artifactId>pom</artifactId>
+  <version>1.0.0</version>
+ </parent>
+ 
  <modules>
   <module>core</module>
  </modules>
 
  <properties>
   <maven.deploy.skip>true</maven.deploy.skip>
-  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  <java.version>1.8</java.version>
-  <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
  </properties>
 
  <build>
   <plugins>
+
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
-    <configuration>
-     <source>${java.version}</source>
-     <target>${java.version}</target>
-    </configuration>
    </plugin>
+
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-source-plugin</artifactId>
-    <version>2.4</version>
-    <executions>
-     <execution>
-      <id>attach-sources</id>
-      <goals>
-       <goal>jar-no-fork</goal>
-      </goals>
-     </execution>
-    </executions>
    </plugin>
+
    <plugin>
     <groupId>org.apache.felix</groupId>
     <artifactId>maven-bundle-plugin</artifactId>
-    <version>2.4.0</version>
-    <extensions>true</extensions>
-    <executions>
-     <execution>
-      <id>bundle-manifest</id>
-      <phase>process-classes</phase>
-      <goals>
-       <goal>manifest</goal>
-      </goals>
-     </execution>
-    </executions>
    </plugin>
+
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-jar-plugin</artifactId>
-    <version>2.4</version>
-    <configuration>
-     <archive>
-      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-     </archive>
-    </configuration>
    </plugin>
+
   </plugins>
 
   <pluginManagement>
    <plugins>
-    <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-compiler-plugin</artifactId>
-     <version>${maven-compiler-plugin.version}</version>
-    </plugin>
+
     <plugin>
      <groupId>org.jacoco</groupId>
      <artifactId>jacoco-maven-plugin</artifactId>
@@ -90,11 +64,13 @@
       </execution>
      </executions>
     </plugin>
+
     <plugin>
      <groupId>org.eluder.coveralls</groupId>
      <artifactId>coveralls-maven-plugin</artifactId>
      <version>4.3.0</version>
     </plugin>
+
    </plugins>
   </pluginManagement>
 

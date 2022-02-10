@@ -15,12 +15,12 @@ import com.developmentontheedge.beans.annot.PropertyName;
 public interface DataElement
 {
     /**
-     * Returns a unique name of the data element.
+     * @return  a unique name of the data element.
      */
     String getName();
 
     /**
-     * Returns the collection this element belongs to.
+     * @return the collection this element belongs to.
      * Since the element can be contained in several collections
      * this should return application-specific <i>main</i> parent collection.
      *

@@ -6,7 +6,7 @@ package ru.biosoft.access.core;
  * <p>Conventions:
  * <ul>
  *   <li>QuerySystem should has public constructor with {@link DataCollection} argument
- *   This constructor is used by {@link DataCollectionInfo} to create QuerySystem. </li>
+ *   This constructor is used by {@link DataCollectionInfo} to create QuerySystem. 
  *   <br>Example:
  *   <pre>public class SequenceQuerySystem implements QuerySystem
  *   {
@@ -15,16 +15,13 @@ package ru.biosoft.access.core;
  *           ...
  *       }
  *       ...
- *   }<pre>
- *   </li>
+ *   }</pre>
  *
  *   <li>All index files used by QuerySystem are registered by {@link DataCollectionInfo}.
  *   Later this information is used to correctly remove all data collection files.
- *   </li>
  *
- *   <li>close all indexes when QuerySystem is closed or finalized.</li>
+ *   <li>close all indexes when QuerySystem is closed or finalized.
  * </ul>
- * </p>
  */
 public interface QuerySystem extends DataCollectionListener
 {

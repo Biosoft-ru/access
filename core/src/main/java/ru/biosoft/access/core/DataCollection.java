@@ -71,26 +71,21 @@ public interface DataCollection<T extends DataElement> extends DataElement, Iter
     //
 
     /**
-     * Returns <b>true</b> if this data collection contains the element with the specified name, <b>false</b> otherwise
-     *
-     *
      * @param name name of data element
      * @return <b>true</b> if this data collection contains the element with specified name,<br> <b>false</b> otherwise
      */
     boolean contains(String name);
 
     /**
-     * Returns <b>true</b> if this data collection contains the specified element, <b>false</b> otherwise
-     *
      * @param element specified data element
      * @return <b>true</b> if this data collection contains the element wit specified name,<br> <b>false</b> otherwise
      */
     boolean contains(DataElement element);
 
     /**
-     * Returns the <code>DataElement</code> with the specified name.
-     * Returns <code>null</code> if the data collection
-     * contains no data element for this name.
+     * @param name 
+     * @return the <code>DataElement</code> with the specified name.
+     * <br>Returns <code>null</code> if the data collection does not contain data element for this name.
      */
     T get(String name) throws Exception;
 
