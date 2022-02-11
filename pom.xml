@@ -3,7 +3,7 @@
    http://maven.apache.org/xsd/maven-4.0.0.xsd">
  <modelVersion>4.0.0</modelVersion>
 
- <groupId>ru.biosoft</groupId>
+ <groupId>ru.biosoft.access</groupId>
  <artifactId>access</artifactId>
  <version>1.0.0</version>
  <packaging>pom</packaging>
@@ -17,6 +17,7 @@
  
  <modules>
   <module>core</module>
+  <module>file</module>
  </modules>
 
  <properties>
