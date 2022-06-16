@@ -146,7 +146,7 @@ public class TransformedDataCollection<T1 extends DataElement, T2 extends DataEl
     @Override
     public boolean isAcceptable(Class clazz)
     {
-        return clazz.isAssignableFrom(getDataElementType());
+        return getDataElementType().isAssignableFrom(clazz);
     }
 
     ///////////////////////////////////////////////////////////////////////////
