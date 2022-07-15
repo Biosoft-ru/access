@@ -860,7 +860,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      *
      * @see DataCollectionEvent
      */
-    protected void fireElementAdded(Object source, String dataElementName) throws Exception
+    protected void fireElementAdded(Object source, String dataElementName)
     {
         if( !notificationEnabled )
             return;
@@ -1021,7 +1021,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      * @see DataCollectionEvent
      */
     protected void fireElementChanged(Object source, DataCollection<?> owner, String dataElementName, DataElement oldElement,
-            DataCollectionEvent primaryEvent) throws Exception
+            DataCollectionEvent primaryEvent)
     {
         if( !notificationEnabled )
             return;
@@ -1059,7 +1059,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
      *
      * @see DataCollectionEvent
      */
-    protected void fireElementRemoved(Object source, String dataElementName, DataElement oldElement) throws Exception
+    protected void fireElementRemoved(Object source, String dataElementName, DataElement oldElement)
     {
         if( !notificationEnabled )
             return;

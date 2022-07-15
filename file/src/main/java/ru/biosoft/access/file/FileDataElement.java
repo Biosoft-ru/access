@@ -1,9 +1,10 @@
 package ru.biosoft.access.file;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.annotation.Nonnull;
+
+import com.developmentontheedge.beans.annot.PropertyName;
 
 import ru.biosoft.access.core.ClassIcon;
 import ru.biosoft.access.core.CloneableDataElement;
@@ -11,8 +12,8 @@ import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementSupport;
 
-import com.developmentontheedge.beans.annot.PropertyName;
 
+//TODO: move from biouml to the core
 /**
  * FileDataElement is {@link DataElement} which wraps the {@link java.io.File File} object.
  * This class is used for storing of objects that have file representation.
@@ -43,12 +44,12 @@ public class FileDataElement extends DataElementSupport implements CloneableData
     }
 
     /**
-     * Constructs FileDataElement with the specified name and parent {@link FileDataCollection}.
+     * Constructs FileDataElement with the specified name and parent {@link FileDataCollectionOld}.
      *
      * @param name   name of DataElement
      * @param origin parent DataCollection
      */
-    public FileDataElement(String name, FileDataCollection <?> origin)
+    public FileDataElement(String name, FileDataCollection origin)
     {
         this(name, origin, origin.getFile(name));
     }
