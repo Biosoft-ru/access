@@ -18,11 +18,14 @@ import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataCollectionConfigConstants;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementDescriptor;
+import ru.biosoft.access.core.Environment;
+import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.Transformer;
 
 //TODO: inherit from FileBasedCollection
-public class FileDataCollection extends AbstractDataCollection<DataElement> {
+public class FileDataCollection extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection{
 	
+	private static final String BIOUML_YML_FILE = "biouml.yml";
 	protected File rootFolder;
 	protected File ymlFile;//optional yml file
 
@@ -32,21 +35,72 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 	//Sorted name list, folders first
 	private List<String> nameList;
 	
+	//Parsed content of yaml file
+	private Map<String, Object> yaml;
+	private Map<String, Map<String, Object>> fileInfoByName;
+	
 	
 	//Constructor used by biouml framework
 	public FileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
 	{
 		super(parent, properties);
 		rootFolder = new File(properties.getProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY));
-		this.ymlFile = new File(rootFolder, ".biouml.yml");
+		this.ymlFile = new File(rootFolder, BIOUML_YML_FILE);
 		
+		reInitYaml();
 		initFromFiles();
+		
 		watchFolder();
 	}
 	
+	
+	public void reInit() throws Exception
+	{
+		v_cache.clear();
+		descriptors.clear();
+		nameList.clear();
+		
+		reInitYaml();
+		initFromFiles();
+	}
+	
+	private void reInitYaml() throws IOException {
+		yaml = Collections.emptyMap();
+		fileInfoByName = Collections.emptyMap();
+		
+		if(!ymlFile.exists())
+			return;
+		YamlParser parser = new YamlParser();
+		byte[] bytes = Files.readAllBytes(ymlFile.toPath());
+		String text = new String(bytes);
+		yaml = parser.parseYaml(text);
+		
+		fileInfoByName = new HashMap<>();
+		Object filesObj = yaml.get("files");
+		if(filesObj != null)
+		{
+			List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
+			for(Map<String, Object> fileInfo : files)
+			{
+				String name = (String) fileInfo.get("name");
+				fileInfoByName.put(name, fileInfo);	
+			}
+		}
+		
+		//Properties of this collection
+		Object propsObj = yaml.get("properties");
+		if(propsObj instanceof Map)
+		{
+			Map<String, String> props = (Map<String, String>) propsObj;
+			getInfo().getProperties().putAll(props);
+		}
+	}
+
 	private void initFromFiles() {
 		for(File file : rootFolder.listFiles())
 		{
+			if(!isFileAccepted(file))
+				continue;
 			DataElementDescriptor descriptor = createDescriptor(file);
 			descriptors.put(file.getName(), descriptor);
 		}
@@ -55,15 +109,42 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 		sortNameList(nameList);
 	}
 	
+	private boolean isBioUMLYAML(File file)
+	{
+		return file.getName().equals(BIOUML_YML_FILE);
+	}
+	
+	@Override
+	public boolean isFileAccepted(File file)
+	{
+		if(isBioUMLYAML(file))
+			return false;
+		
+		//TODO: yaml.fileFilter
+		return true;
+	}
+	@Override
+	public File getChildFile(String name) {
+		return new File(rootFolder, name);
+	}
+	
 	
 	private WatchKey watchKey;
 	private void watchFolder() throws IOException {
 		watchKey = FileSystemWatcher.INSTANCE.watchFolder(rootFolder, new FileSystemListener() {
 			
 			@Override
-			public void added(Path path) {
+			public void added(Path path)throws Exception {
 				File file = path.toFile();
 				String name = file.getName();
+				if(isBioUMLYAML(file))
+				{
+					reInit();
+					return;
+				}
+				if(!isFileAccepted(file))
+					return;
+				
 				DataElementDescriptor descriptor = createDescriptor(file);
 				descriptors.put(name, descriptor);
 				nameList.add(name);
@@ -72,9 +153,17 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 			}
 			
 			@Override
-			public void removed(Path path) {
+			public void removed(Path path) throws Exception {
 				File file = path.toFile();
 				String name = file.getName();
+				if(isBioUMLYAML(file))
+				{
+					reInit();
+					return;
+				}
+				if(!isFileAccepted(file))
+					return;
+				
 				nameList.remove(name);
 				descriptors.remove(name);
 				DataElement oldFromCache = getFromCache(name);
@@ -83,9 +172,17 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 			}
 			
 			@Override
-			public void modified(Path path) {
+			public void modified(Path path) throws Exception {
 				File file = path.toFile();
 				String name = file.getName();
+				if(isBioUMLYAML(file))
+				{
+					reInit();
+					return;
+				}
+				if(!isFileAccepted(file))
+					return;
+				
 				DataElementDescriptor descriptor = createDescriptor(file);
 				descriptors.put(name, descriptor);
 				DataElement oldFromCache = getFromCache(name);
@@ -94,11 +191,8 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 			}
 			
 			@Override
-			public void overflow(Path dir) {
-				v_cache.clear();
-				descriptors.clear();
-				nameList.clear();
-				initFromFiles();
+			public void overflow(Path dir) throws Exception {
+				reInit();
 			}
 		});
 	}
@@ -128,14 +222,28 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
-		List<Transformer> tList = Transformers.getByOutType(dataElement.getClass());
-		Transformer t = tList == null || tList.isEmpty() ? null : tList.get(0);
+		ru.biosoft.access.file.Environment ENV = ru.biosoft.access.file.Environment.INSTANCE;
+		if(dataElement.getClass().equals( ENV.getFileDataElementClass() ))
+		{
+			File existing = ENV.getFile(dataElement);
+			File target = getChildFile(dataElement.getName());
+			
+			try {
+				Files.createLink(target.toPath(), existing.toPath());
+			} catch(IOException e)
+			{
+				Files.copy(existing.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);	
+			}
+			return;
+		}
+		
+		Transformer t = ENV.getTransformerForDataElement(dataElement);
 		if(t==null)
 			throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
-		FileDataElement fde = (FileDataElement) t.transformOutput(dataElement);
-		
-		//TODO: Correct extension for the new File
-		Files.move(fde.file.toPath(), getFile(dataElement.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		t.init(this, this);
+		t.transformOutput(dataElement);
+		//Transformer will put file into folder
+		//TODO: Correct extension for the new File or add record in yaml
     }
 
 	@Override
@@ -150,14 +258,23 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
        return descriptors.get(name);
     }
     
+    @Override
+    public boolean isAcceptable(Class<? extends DataElement> clazz) {
+    	//TODO: check if we have suitable transformer for this clazz
+    	return true;
+    }
+    
     private DataElementDescriptor createDescriptor(File file) {
     	if(file.isDirectory())
     		return new DataElementDescriptor(FileDataCollection.class, false);
     	else
     	{
-    		Transformer<FileDataElement, DataElement> transformer = getTransformer(file);
-    		Class<? extends DataElement> outputType = transformer == null ? FileDataElement.class : transformer.getOutputType();
-    		return new DataElementDescriptor(outputType, true);
+    		Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+    		Map<String, String> properties = fileInfo == null ? null : (Map<String, String>) fileInfo.get("properties");
+    		
+    		Transformer transformer = getTransformer(file);
+    		Class<? extends DataElement> outputType = transformer == null ?  ru.biosoft.access.file.Environment.INSTANCE.getFileDataElementClass() : transformer.getOutputType();
+    		return new DataElementDescriptor(outputType, true, properties);
     	}
 	}
     
@@ -175,28 +292,35 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
     		properties.setProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY, file.getAbsolutePath());
     		return new FileDataCollection(this, properties);
     	}
-        FileDataElement fda = new FileDataElement( file.getName(), this, file );
+        DataElement fda = ru.biosoft.access.file.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
         
-        Transformer<FileDataElement, DataElement> transformer = getTransformer(file);
+        Transformer transformer = getTransformer(file);
         if(transformer == null)
             return fda;
-        transformer.init( null, this );
+        transformer.init( this, this );
         return transformer.transformInput( fda );
     }
 
-    private Transformer<FileDataElement, DataElement> getTransformer(File file)
+    private Transformer getTransformer(File file)
     {
-        //TODO: Check yaml first
+    	//transformer can be set in biouml.yaml or auto-detected based on file extension
+    	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+    	if(fileInfo != null && fileInfo.containsKey("transformer"))
+		{
+    		String transformerClassName = (String) fileInfo.get("transformer");
+			Class<? extends Transformer> clazz = Environment.loadClass(transformerClassName, Transformer.class);
+			try {
+				return clazz.newInstance();
+			} catch (InstantiationException|IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
         return getTransformerBasedOnFile(file);
     }
     
-    private Transformer<FileDataElement, DataElement>  getTransformerBasedOnFile(File file)
+    private Transformer  getTransformerBasedOnFile(File file)
     {
-        String name = file.getName();
-        int dotIdx = name.lastIndexOf( '.' );
-        String ext = dotIdx == -1 ? "" : name.substring( dotIdx + 1 );
-        List<Transformer> tList = Transformers.getByExtension(ext);
-		return tList == null || tList.isEmpty() ? null : tList.get(0);
+    	return ru.biosoft.access.file.Environment.INSTANCE.getTransformerForFile(file);
     }
 
 
@@ -211,5 +335,15 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> {
     	close();
     	super.finalize();
     }
-	
+
+	@Override
+	public DataCollection createSubCollection(String name, Class<? extends FolderCollection> clazz) {
+		File folder = new File(rootFolder, name);
+		folder.mkdir();
+		try {
+			return (DataCollection) get(name);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

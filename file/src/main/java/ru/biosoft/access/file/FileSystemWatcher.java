@@ -94,19 +94,28 @@ public class FileSystemWatcher {
 			
 			for (WatchEvent<?> event : key.pollEvents()) {
 				if(event.kind() == OVERFLOW) {
-					listener.overflow(watcher.folder);
+					try {
+						listener.overflow(watcher.folder);
+					} catch(Exception e)
+					{
+						LOG.log(Level.WARNING, "Error handling file system event for " + watcher.folder, e);
+					}
 					continue;
 				} 
 				Path p = (Path) event.context();
 				Path absPath = watcher.folder.resolve(p);
-				if (event.kind() == ENTRY_CREATE) {
-					listener.added(absPath);
-				} else if (event.kind() == ENTRY_DELETE) {
-					listener.removed(absPath);
-				} else if(event.kind() == ENTRY_MODIFY) {
-					listener.modified(absPath);
-				} else {
-					LOG.warning("Unknown event kind: " + event.kind().name());
+				try {
+					if (event.kind() == ENTRY_CREATE) {
+						listener.added(absPath);
+					} else if (event.kind() == ENTRY_DELETE) {
+						listener.removed(absPath);
+					} else if (event.kind() == ENTRY_MODIFY) {
+						listener.modified(absPath);
+					} else {
+						LOG.warning("Unknown event kind: " + event.kind().name());
+					}
+				} catch (Exception e) {
+					LOG.log(Level.WARNING, "Error handling file system event for " + absPath, e);
 				}
 			}
 			
