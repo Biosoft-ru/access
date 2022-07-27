@@ -1,17 +1,25 @@
 package ru.biosoft.access.file;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+
+import org.yaml.snakeyaml.Yaml;
 
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
@@ -67,32 +75,35 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	private void reInitYaml() throws IOException {
 		yaml = Collections.emptyMap();
 		fileInfoByName = Collections.emptyMap();
-		
-		if(!ymlFile.exists())
-			return;
-		YamlParser parser = new YamlParser();
-		byte[] bytes = Files.readAllBytes(ymlFile.toPath());
-		String text = new String(bytes);
-		yaml = parser.parseYaml(text);
-		
-		fileInfoByName = new HashMap<>();
-		Object filesObj = yaml.get("files");
-		if(filesObj != null)
-		{
-			List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
-			for(Map<String, Object> fileInfo : files)
-			{
-				String name = (String) fileInfo.get("name");
-				fileInfoByName.put(name, fileInfo);	
+
+		try {
+			if (!ymlFile.exists())
+				return;
+			YamlParser parser = new YamlParser();
+			byte[] bytes = Files.readAllBytes(ymlFile.toPath());
+			String text = new String(bytes);
+			yaml = parser.parseYaml(text);
+
+			fileInfoByName = new HashMap<>();
+			Object filesObj = yaml.get("files");
+			if (filesObj != null) {
+				List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
+				for (Map<String, Object> fileInfo : files) {
+					String name = (String) fileInfo.get("name");
+					fileInfoByName.put(name, fileInfo);
+				}
 			}
-		}
-		
-		//Properties of this collection
-		Object propsObj = yaml.get("properties");
-		if(propsObj instanceof Map)
-		{
-			Map<String, String> props = (Map<String, String>) propsObj;
-			getInfo().getProperties().putAll(props);
+
+			// Properties of this collection
+			Object propsObj = yaml.get("properties");
+			if (propsObj instanceof Map) {
+				Map<String, String> props = (Map<String, String>) propsObj;
+				getInfo().getProperties().putAll(props);
+			}
+		} catch (Exception e) {
+			log.log(Level.WARNING, "Can not init from biouml.yml, file will be ignored", e);
+			yaml = Collections.emptyMap();
+			fileInfoByName = Collections.emptyMap();
 		}
 	}
 
@@ -175,7 +186,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			public void modified(Path path) throws Exception {
 				File file = path.toFile();
 				String name = file.getName();
-				if(isBioUMLYAML(file))
+				if(isBioUMLYAML(file))//TODO: detect what elements were changed and update only them
 				{
 					reInit();
 					return;
@@ -204,7 +215,19 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 
 	@Override
 	protected boolean sortNameList(List<String> list) {
-		Collections.sort(list);
+		Comparator<String> cmp = new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				DataElementDescriptor d1 = descriptors.get(o1);
+				DataElementDescriptor d2 = descriptors.get(o2);
+				if(d1.isLeaf() == d2.isLeaf())
+					return o1.compareTo(o2);
+				if(d1.isLeaf())
+					return 1;
+				return -1;
+			}
+		};
+		Collections.sort(list, cmp );
 		//TODO: sort folders first
 		return true;
 	}
@@ -316,6 +339,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			}
 		}
         return getTransformerBasedOnFile(file);
+        //TODO: transformerParameters
     }
     
     private Transformer  getTransformerBasedOnFile(File file)
@@ -345,5 +369,47 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public Map<String, Object> getFileInfo(String name)
+	{
+		Map<String, Object> res = fileInfoByName.get(name);
+		if(res == null)
+		{
+			res = new LinkedHashMap<>();
+			res.put("name", name);
+		}
+		return res;
+	}
+	public void setFileInfo(Map<String, Object> properties) throws IOException
+	{
+		String name = (String) properties.get("name");
+
+		Map<String, Object> yaml;
+		if(ymlFile.exists()) {
+			YamlParser parser = new YamlParser();
+			byte[] bytes = Files.readAllBytes(ymlFile.toPath());
+			String text = new String(bytes);
+			yaml = parser.parseYaml(text);
+		}else
+			yaml = new HashMap<>();
+
+		fileInfoByName = new HashMap<>();
+		Object filesObj = yaml.get("files");
+		if(filesObj == null)
+			yaml.put("files", filesObj = new ArrayList<>());
+		if (filesObj != null) {
+			List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
+			for(int i = 0; i < files.size(); i++)
+			{
+				Map<String, Object> fileInfo = new HashMap<>();
+				if( name.equals(fileInfo.get("name")))
+					files.set(i, properties);
+			}
+		}
+		Yaml parser = new Yaml();
+		Writer writer = new BufferedWriter(new FileWriter(ymlFile));
+		parser.dump(yaml, writer);
+		writer.close();
 	}
 }

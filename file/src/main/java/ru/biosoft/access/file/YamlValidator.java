@@ -87,7 +87,8 @@ public class YamlValidator
         	error("Transformer should be a string");
         
         Object properties = m.get("properties");
-        validateProperties(properties);
+        if(properties != null)
+        	validateProperties(properties);
         	
 	}
 
