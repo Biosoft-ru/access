@@ -17,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 import org.yaml.snakeyaml.Yaml;
@@ -38,7 +40,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	protected File ymlFile;//optional yml file
 
 	//Layer of descriptors, corresponding DataElements will be created in lazy way
-	private Map<String, DataElementDescriptor> descriptors = new HashMap<>();
+	private Map<String, DataElementDescriptor> descriptors = new ConcurrentHashMap<>();
 	
 	//Sorted name list, folders first
 	private List<String> nameList;
@@ -55,18 +57,17 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		rootFolder = new File(properties.getProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY));
 		this.ymlFile = new File(rootFolder, BIOUML_YML_FILE);
 		
-		reInitYaml();
-		initFromFiles();
+		reInit();
 		
 		watchFolder();
 	}
 	
 	
-	public void reInit() throws Exception
+	public synchronized void reInit() throws IOException
 	{
 		v_cache.clear();
 		descriptors.clear();
-		nameList.clear();
+		nameList = new CopyOnWriteArrayList<String>();
 		
 		reInitYaml();
 		initFromFiles();
@@ -115,8 +116,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			DataElementDescriptor descriptor = createDescriptor(file);
 			descriptors.put(file.getName(), descriptor);
 		}
-		nameList = new ArrayList<>();
-		nameList.addAll(descriptors.keySet());
+		nameList = new CopyOnWriteArrayList<>(descriptors.keySet());
 		sortNameList(nameList);
 	}
 	
@@ -209,7 +209,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	}
 
 	@Override
-	public List<String> getNameList() {
+	public synchronized List<String> getNameList() {
 		return nameList;
 	}
 
@@ -228,13 +228,12 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			}
 		};
 		Collections.sort(list, cmp );
-		//TODO: sort folders first
 		return true;
 	}
 	
 	@Override
 	protected DataElement doGet(String name) throws Exception {
-		if(!descriptors.containsKey(name))
+		if(!descriptors.containsKey(name))//TODO: synchronize access to descriptors
 			return null;
 		File file = getFile(name);
 		if (!file.exists())
@@ -276,7 +275,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     }
     
     @Override
-    public DataElementDescriptor getDescriptor(String name)
+    public synchronized DataElementDescriptor getDescriptor(String name)
     {
        return descriptors.get(name);
     }
@@ -398,15 +397,20 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		Object filesObj = yaml.get("files");
 		if(filesObj == null)
 			yaml.put("files", filesObj = new ArrayList<>());
-		if (filesObj != null) {
-			List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
-			for(int i = 0; i < files.size(); i++)
+		List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
+		boolean found = false;
+		for (int i = 0; i < files.size(); i++) {
+			Map<String, Object> fileInfo = files.get(i);
+			if (name.equals(fileInfo.get("name")))
 			{
-				Map<String, Object> fileInfo = new HashMap<>();
-				if( name.equals(fileInfo.get("name")))
-					files.set(i, properties);
+				files.set(i, properties);
+				found = true;
+				break;
 			}
 		}
+		if(!found)
+			files.add(properties);
+		
 		Yaml parser = new Yaml();
 		Writer writer = new BufferedWriter(new FileWriter(ymlFile));
 		parser.dump(yaml, writer);
