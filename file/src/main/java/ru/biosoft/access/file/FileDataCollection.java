@@ -233,6 +233,11 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	}
 	
 	@Override
+	public synchronized DataElement get(String name) throws Exception {
+		return super.get(name);
+	}
+	
+	@Override
 	protected DataElement doGet(String name) throws Exception {
 		if(!descriptors.containsKey(name))//TODO: synchronize access to descriptors
 			return null;
@@ -306,7 +311,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
         return new File(rootFolder, name);
     }
     
-    private synchronized DataElement createElement(File file) throws Exception
+    private DataElement createElement(File file) throws Exception
     {
     	if(file.isDirectory())
     	{
