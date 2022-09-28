@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.ArrayList;
@@ -312,6 +313,13 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     		Properties properties = new Properties();
     		properties.setProperty(DataCollectionConfigConstants.NAME_PROPERTY, file.getName());
     		properties.setProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY, file.getAbsolutePath());
+    		
+    		//Config path is required to store biouml speciic indices such as JDBM2Index for fasta
+    		File configPath = new File(getInfo().getProperty(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY), file.getName());
+    		if(!configPath.exists())
+    			configPath.mkdirs();
+    		
+    		properties.setProperty(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY, configPath.getAbsolutePath());
     		return new FileDataCollection(this, properties);
     	}
         DataElement fda = ru.biosoft.access.file.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
