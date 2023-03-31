@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.ArrayList;
@@ -84,7 +86,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			byte[] bytes = Files.readAllBytes(ymlFile.toPath());
 			String text = new String(bytes);
 			yaml = parser.parseYaml(text);
-
+			
 			fileInfoByName = new HashMap<>();
 			Object filesObj = yaml.get("files");
 			if (filesObj != null) {
@@ -130,9 +132,9 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	{
 		if(isBioUMLYAML(file))
 			return false;
-		
-		//TODO: yaml.fileFilter
-		return true;
+		String fileFilter = (String) yaml.get("fileFilter");
+		PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher( "glob:" + fileFilter );
+		return pathMatcher.matches(file.toPath());
 	}
 	@Override
 	public File getChildFile(String name) {
