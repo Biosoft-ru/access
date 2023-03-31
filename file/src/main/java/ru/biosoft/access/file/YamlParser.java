@@ -13,7 +13,7 @@ public class YamlParser
 
         Object root = parser.load( text );
         if( ! ( root instanceof Map ) )
-            throw new IllegalArgumentException("Yaml should be a mpa of key-values, but get " + root);
+            throw new IllegalArgumentException("Yaml should be a map of key-values, but get " + root);
 
         Map<?, ?> rootMap = (Map<?, ?>)root;
         YamlValidator validator = new YamlValidator();

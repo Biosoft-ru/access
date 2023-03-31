@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import ru.biosoft.access.core.AbstractDataCollection;
@@ -62,7 +62,6 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		
 		watchFolder();
 	}
-	
 	
 	public synchronized void reInit() throws IOException
 	{
@@ -109,7 +108,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		}
 	}
 
-	private void initFromFiles() {
+	private synchronized void initFromFiles() {
 		for(File file : rootFolder.listFiles())
 		{
 			if(!isFileAccepted(file))
@@ -148,7 +147,6 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			@Override
 			public void added(Path path)throws Exception {
 				File file = path.toFile();
-				String name = file.getName();
 				if(isBioUMLYAML(file))
 				{
 					reInit();
@@ -157,11 +155,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 				if(!isFileAccepted(file))
 					return;
 				
-				DataElementDescriptor descriptor = createDescriptor(file);
-				descriptors.put(name, descriptor);
-				nameList.add(name);
-				sortNameList(nameList);
-				fireElementAdded(FileDataCollection.this, name);
+				fileUpdated(file);
 			}
 			
 			@Override
@@ -175,18 +169,13 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 				}
 				if(!isFileAccepted(file))
 					return;
-				
-				nameList.remove(name);
-				descriptors.remove(name);
-				DataElement oldFromCache = getFromCache(name);
-				removeFromCache(name);
-				fireElementRemoved(FileDataCollection.this, name, oldFromCache);
+
+				fileRemoved(name);
 			}
 			
 			@Override
 			public void modified(Path path) throws Exception {
 				File file = path.toFile();
-				String name = file.getName();
 				if(isBioUMLYAML(file))//TODO: detect what elements were changed and update only them
 				{
 					reInit();
@@ -195,11 +184,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 				if(!isFileAccepted(file))
 					return;
 				
-				DataElementDescriptor descriptor = createDescriptor(file);
-				descriptors.put(name, descriptor);
-				DataElement oldFromCache = getFromCache(name);
-				removeFromCache(name);
-				fireElementChanged(FileDataCollection.this, FileDataCollection.this, name, oldFromCache, null);
+				fileUpdated(file);
 			}
 			
 			@Override
@@ -208,6 +193,37 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			}
 		});
 	}
+	
+	//called when file was added or modified
+	private synchronized void fileUpdated(File file)
+	{
+		String name = file.getName();
+		boolean isNew = !descriptors.containsKey(name); 
+		DataElementDescriptor descriptor = createDescriptor(file);
+		descriptors.put(name, descriptor);
+		if(isNew)
+		{
+			nameList.add(name);
+			sortNameList(nameList);
+			fireElementAdded(FileDataCollection.this, name);
+		}else
+		{
+			DataElement oldFromCache = getFromCache(name);
+			removeFromCache(name);
+			fireElementChanged(FileDataCollection.this, FileDataCollection.this, name, oldFromCache, null);
+		}
+	}
+	
+	//called when file was removed
+	private synchronized void fileRemoved(String name)
+	{
+		nameList.remove(name);
+		descriptors.remove(name);
+		DataElement oldFromCache = getFromCache(name);
+		removeFromCache(name);
+		fireElementRemoved(FileDataCollection.this, name, oldFromCache);
+	}
+	
 
 	@Override
 	public synchronized List<String> getNameList() {
@@ -251,37 +267,74 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
 		ru.biosoft.access.file.Environment ENV = ru.biosoft.access.file.Environment.INSTANCE;
+		File file;
 		if(dataElement.getClass().equals( ENV.getFileDataElementClass() ))
 		{
 			File existing = ENV.getFile(dataElement);
-			File target = getChildFile(dataElement.getName());
+			file = getChildFile(dataElement.getName());
 			
 			try {
-				Files.createLink(target.toPath(), existing.toPath());
+				Files.createLink(file.toPath(), existing.toPath());
 			} catch(IOException e)
 			{
-				Files.copy(existing.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);	
+				Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
 			}
-			return;
+		} else if(dataElement instanceof FileDataCollection)
+		{
+			FileDataCollection fdc = (FileDataCollection) dataElement;
+			file = fdc.rootFolder;
+			storeElementProperties(fdc, null);
+		}
+		else {
+			Transformer t = ENV.getTransformerForDataElement(dataElement);
+			if (t == null)
+				throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
+			t.init(this, this);
+			DataElement fileDataElement = t.transformOutput(dataElement); // Transformer will put file into folder
+			storeElementProperties(dataElement, t.getClass());
+			file = ENV.getFile(fileDataElement);
 		}
 		
-		Transformer t = ENV.getTransformerForDataElement(dataElement);
-		if(t==null)
-			throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
-		t.init(this, this);
-		t.transformOutput(dataElement);
-		//Transformer will put file into folder
-		//TODO: Correct extension for the new File or add record in yaml
+		
+		fileUpdated(file);
     }
+
+	public void storeElementProperties(DataElement de, Class<?> transformerClass) throws IOException {
+		Map<String, Object> propertiesAsMap = new LinkedHashMap<>();
+		if(de instanceof DataCollection)
+		{
+			Properties properties = ((DataCollection)de).getInfo().getProperties();
+			
+			for(Object key : properties.keySet())
+			{
+				Object value = properties.get(key);
+				propertiesAsMap.put((String)key, value);
+			}
+			propertiesAsMap.remove(DataCollectionConfigConstants.NAME_PROPERTY);
+			propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PATH_PROPERTY);
+			propertiesAsMap.remove(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY);
+
+		}
+		if(propertiesAsMap.isEmpty() && transformerClass == null)
+			return;
+		Map<String, Object> fileInfo = new LinkedHashMap<>();
+		fileInfo.put(DataCollectionConfigConstants.NAME_PROPERTY, de.getName());
+		if(!propertiesAsMap.isEmpty())
+			fileInfo.put("properties", propertiesAsMap);
+		if(transformerClass != null)
+			fileInfo.put("transformer", transformerClass.getName());
+		setFileInfo(fileInfo);
+	}
 
 	@Override
     protected void doRemove(String name) throws Exception
     {
     	new File(rootFolder, name).delete();
+    	fileRemoved(name);
     }
     
     @Override
-    public synchronized DataElementDescriptor getDescriptor(String name)
+    public DataElementDescriptor getDescriptor(String name)
     {
        return descriptors.get(name);
     }
@@ -293,13 +346,12 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     }
     
     private DataElementDescriptor createDescriptor(File file) {
+    	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+		Map<String, String> properties = fileInfo == null ? null : (Map<String, String>) fileInfo.get("properties");
     	if(file.isDirectory())
-    		return new DataElementDescriptor(FileDataCollection.class, false);
+    		return new DataElementDescriptor(FileDataCollection.class, false, properties);
     	else
     	{
-    		Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
-    		Map<String, String> properties = fileInfo == null ? null : (Map<String, String>) fileInfo.get("properties");
-    		
     		Transformer transformer = getTransformer(file);
     		Class<? extends DataElement> outputType = transformer == null ?  ru.biosoft.access.file.Environment.INSTANCE.getFileDataElementClass() : transformer.getOutputType();
     		return new DataElementDescriptor(outputType, true, properties);
@@ -325,6 +377,11 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     			configPath.mkdirs();
     		
     		properties.setProperty(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY, configPath.getAbsolutePath());
+    		
+    		Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+    		if(fileInfo != null && fileInfo.containsKey("properties"))
+    			properties.putAll((Map)fileInfo.get("properties"));
+    		
     		return new FileDataCollection(this, properties);
     	}
         DataElement fda = ru.biosoft.access.file.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
@@ -376,6 +433,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	public DataCollection createSubCollection(String name, Class<? extends FolderCollection> clazz) {
 		File folder = new File(rootFolder, name);
 		folder.mkdir();
+		fileUpdated(folder);
 		try {
 			return (DataCollection) get(name);
 		} catch (Exception e) {
@@ -424,7 +482,10 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 		if(!found)
 			files.add(properties);
 		
-		Yaml parser = new Yaml();
+		DumperOptions options = new DumperOptions();
+		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+		options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
+		Yaml parser = new Yaml(options);
 		Writer writer = new BufferedWriter(new FileWriter(ymlFile));
 		parser.dump(yaml, writer);
 		writer.close();

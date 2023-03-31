@@ -11,6 +11,7 @@ import ru.biosoft.jobcontrol.FunctionJobControl;
 
 public interface DataElementImporter
 {
+	public static final int ACCEPT_EXCLUSIVE = 100;
     public static final int ACCEPT_HIGHEST_PRIORITY = 30;
     public static final int ACCEPT_HIGH_PRIORITY = 20;
     public static final int ACCEPT_MEDIUM_PRIORITY = 10;
