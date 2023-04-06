@@ -398,7 +398,16 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
         if(transformer == null)
             return fda;
         transformer.init( this, this );
-        return transformer.transformInput( fda );
+        DataElement result = transformer.transformInput( fda );
+        if(result instanceof DataCollection)
+        {
+        	Properties properties = ((DataCollection) result).getInfo().getProperties();
+        	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+        	if(fileInfo != null && fileInfo.containsKey("properties"))
+    			properties.putAll((Map)fileInfo.get("properties"));
+        }
+        
+		return result;
     }
 
     private Transformer getTransformer(File file)
