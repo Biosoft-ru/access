@@ -9,6 +9,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.ArrayList;
@@ -132,9 +133,14 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	{
 		if(isBioUMLYAML(file))
 			return false;
+		boolean recursive = (Boolean) yaml.getOrDefault("recursive", true);
+		if(recursive && file.isDirectory())
+			return true;
 		String fileFilter = (String) yaml.get("fileFilter");
+		if(fileFilter == null)
+			return true;
 		PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher( "glob:" + fileFilter );
-		return pathMatcher.matches(file.toPath());
+		return pathMatcher.matches(Paths.get(file.getName()));
 	}
 	@Override
 	public File getChildFile(String name) {
