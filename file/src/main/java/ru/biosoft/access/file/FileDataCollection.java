@@ -32,6 +32,7 @@ import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataCollectionConfigConstants;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementDescriptor;
+import ru.biosoft.access.core.DataElementPutException;
 import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.Transformer;
@@ -270,6 +271,13 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			return null;
 		return createElement(file);
 	}
+	
+	@Override
+	public synchronized DataElement put(DataElement element) throws DataElementPutException {
+		DataElement old = super.put(element);
+		removeFromCache(element.getName());//AbstractDataCollection will put element into cache, but FileDataCollection wants to recreate it from file resulting in possibly distinct element
+		return old;
+	}
 
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
@@ -281,11 +289,14 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 			File existing = ENV.getFile(dataElement);
 			file = getChildFile(dataElement.getName());
 			
-			try {
-				Files.createLink(file.toPath(), existing.toPath());
-			} catch(IOException e)
+			if(!file.equals(existing))
 			{
-				Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
+				try {
+					Files.createLink(file.toPath(), existing.toPath());
+				} catch(IOException e)
+				{
+					Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
+				}
 			}
 		} else if(dataElement instanceof FileDataCollection)
 		{
@@ -349,8 +360,8 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     
     @Override
     public boolean isAcceptable(Class<? extends DataElement> clazz) {
-    	//TODO: check if we have suitable transformer for this clazz
-    	return true;
+    	return ru.biosoft.access.file.Environment.INSTANCE.getFileDataElementClass().equals(clazz)
+    			|| clazz.isAssignableFrom(FolderCollection.class);
     }
     
     private DataElementDescriptor createDescriptor(File file) {
@@ -394,6 +405,7 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     	}
         DataElement fda = ru.biosoft.access.file.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
         
+        Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
         Transformer transformer = getTransformer(file);
         if(transformer == null)
             return fda;
@@ -402,7 +414,6 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
         if(result instanceof DataCollection)
         {
         	Properties properties = ((DataCollection) result).getInfo().getProperties();
-        	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
         	if(fileInfo != null && fileInfo.containsKey("properties"))
     			properties.putAll((Map)fileInfo.get("properties"));
         }
