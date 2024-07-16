@@ -24,14 +24,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
+import org.apache.commons.io.FileUtils;
+
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataCollectionConfigConstants;
+import ru.biosoft.access.core.DataCollectionInfo;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementDescriptor;
+import ru.biosoft.access.core.DataElementPath;
 import ru.biosoft.access.core.DataElementPutException;
 import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
@@ -348,7 +352,38 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
 	@Override
     protected void doRemove(String name) throws Exception
     {
-    	new File(rootFolder, name).delete();
+        DataElement oldElement = null;
+        try
+        {
+            oldElement = doGet(name);
+        }
+        catch (Exception e)
+        {
+        }
+        File file = new File(rootFolder, name);
+        if ( file.isDirectory() )
+            FileUtils.deleteDirectory(file);
+        else
+            file.delete();
+        if ( oldElement != null && oldElement instanceof DataCollection )
+        {
+            DataCollectionInfo dci = ((DataCollection) oldElement).getInfo();
+            List<File> usedFiles = dci.getUsedFiles();
+            if ( usedFiles != null )
+                for ( File f : usedFiles )
+                {
+                    try
+                    {
+                        if ( f.isDirectory() )
+                            FileUtils.deleteDirectory(f);
+                        else
+                            f.delete();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+        }
     	fileRemoved(name);
     }
     
@@ -401,7 +436,9 @@ public class FileDataCollection extends AbstractDataCollection<DataElement> impl
     		if(fileInfo != null && fileInfo.containsKey("properties"))
     			properties.putAll((Map)fileInfo.get("properties"));
     		
-    		return new FileDataCollection(this, properties);
+            FileDataCollection result = new FileDataCollection(this, properties);
+            result.getInfo().addUsedFile(configPath);
+            return result;
     	}
         DataElement fda = ru.biosoft.access.file.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
         
