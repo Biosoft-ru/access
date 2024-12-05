@@ -61,7 +61,8 @@ public class FileSystemWatcher {
     public void stopWatching(WatchKey watchKey) {
     	Watcher watcher = watchers.remove(watchKey);
     	watchKey.cancel();
-        LOG.info("Unregistered " + watcher.folder + " in watcher service");
+        if ( watcher != null )
+            LOG.info("Unregistered " + watcher.folder + " in watcher service");
     }
     
     private static class Watcher {
