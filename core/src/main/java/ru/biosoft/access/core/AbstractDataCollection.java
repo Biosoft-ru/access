@@ -605,7 +605,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
                 DataElement oldElement = null;
                 try
                 {
-                    oldElement = doGet(name);
+                    oldElement = get(name);
                 }
                 catch( Exception e )
                 {
@@ -1201,7 +1201,7 @@ abstract public class AbstractDataCollection<T extends DataElement> extends Data
 
     private void initCache(Properties properties)
     {
-        String cachingStrategy = properties.getProperty( CACHING_STRATEGY, "weak" );
+        String cachingStrategy = properties.getProperty( CACHING_STRATEGY, "soft" );
 
         if(cachingStrategy.equals( "weak" ))
             v_cache = new HashMapWeakValues();
