@@ -11,11 +11,11 @@
  <description>Core classes for access to heterogenous biological data.</description>
   <url>https://github.com/Biosoft-ru/access</url>
 
-<properties>
-   <encoding>UTF-8</encoding>
-   <maven.compiler.source>17</maven.compiler.source>
-   <maven.compiler.target>17</maven.compiler.target>
- </properties>
+    <properties>
+      <encoding>UTF-8</encoding>
+      <maven.compiler.source>8</maven.compiler.source>
+      <maven.compiler.target>8</maven.compiler.target>
+    </properties>
 
     <licenses>
         <license>
