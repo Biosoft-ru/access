@@ -4,7 +4,7 @@
 
  <groupId>ru.biosoft.access</groupId>
  <artifactId>core</artifactId>
- <version>1.1.0</version>
+ <version>1.1.1</version>
  <packaging>jar</packaging>
 
  <name>Data access core</name>
@@ -40,7 +40,7 @@
  <parent>
   <groupId>ru.biosoft.access</groupId>
   <artifactId>access</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
  </parent>
 
  <dependencies>
@@ -48,19 +48,19 @@
   <dependency>
     <groupId>ru.biosoft</groupId>
     <artifactId>exception</artifactId>
-    <version>1.0.0</version>
+    <version>[1.0.0,)</version>
   </dependency>
 
   <dependency>
     <groupId>ru.biosoft</groupId>
     <artifactId>util</artifactId>
-    <version>1.0.0</version>
+    <version>[1.0.0,)</version>
   </dependency>
 
   <dependency>
     <groupId>ru.biosoft</groupId>
     <artifactId>jobcontrol</artifactId>
-    <version>1.0.0</version>
+    <version>[1.0.0,)</version>
   </dependency>
 
   <dependency>
@@ -72,7 +72,7 @@
   <dependency>
    <groupId>com.developmentontheedge</groupId>
    <artifactId>beans</artifactId>
-   <version>3.0.4</version>
+   <version>[3.0.4,)</version>
   </dependency>
 
  </dependencies>
