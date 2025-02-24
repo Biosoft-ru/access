@@ -24,7 +24,8 @@ import java.util.logging.Logger;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 
-public class FileSystemWatcher {
+public class FileSystemWatcher 
+{
 
     private static final Logger LOG = Logger.getLogger(FileSystemWatcher.class.getName());
     
@@ -35,7 +36,8 @@ public class FileSystemWatcher {
 
     private FileSystemWatcher()
     {
-    	try {
+    	try 
+    	{
 			watchService = FileSystems.getDefault().newWatchService();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -50,53 +52,71 @@ public class FileSystemWatcher {
     {
     	 if (!folder.exists() || !folder.isDirectory())
              throw new RuntimeException("folder " + folder.getAbsolutePath() + " does not exist or is not a directory");
-    	 WatchKey watchKey = folder.toPath().register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW}, SensitivityWatchEventModifier.HIGH);
+    	 
+    	 WatchKey watchKey = folder.toPath().register(watchService, 
+    	             new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW}, // all possible events
+    	             SensitivityWatchEventModifier.HIGH);
     	 Watcher watcher = new Watcher(watchKey, folder.toPath(), listener);
     	 watchers.put(watchKey, watcher);
-         LOG.info("registered " + watcher.folder + " in watcher service");
+
+    	 LOG.info("Watcher registered, folder: " + watcher.folder + "");
          return watchKey;
-    	 
     }
     
-    public void stopWatching(WatchKey watchKey) {
+    public void stopWatching(WatchKey watchKey) 
+    {
     	Watcher watcher = watchers.remove(watchKey);
     	watchKey.cancel();
-        if ( watcher != null )
-            LOG.info("Unregistered " + watcher.folder + " in watcher service");
+
+    	if ( watcher != null )
+            LOG.info("Watcher unregistered, foder: " + watcher.folder);
     }
     
-    private static class Watcher {
+    private static class Watcher 
+    {
 		WatchKey key;
     	Path folder;
     	FileSystemListener listener;
-    	public Watcher(WatchKey key, Path folder, FileSystemListener listener) {
+
+    	public Watcher(WatchKey key, Path folder, FileSystemListener listener) 
+    	{
 			this.key = key;
 			this.folder = folder;
 			this.listener = listener;
 		}
     }
 
-	private void processEvents() {
-		while (true) {
+	private void processEvents() 
+	{
+		while (true) 
+		{
 			final WatchKey key;
-			try {
+			
+			try 
+			{
 				key = watchService.take(); // wait for a key to be available
-			} catch (InterruptedException ex) {
+			}
+			catch (InterruptedException ex) 
+			{
 				LOG.info("EXIT, interrupted");
 				return;
 			}
 
 			Watcher watcher = watchers.get(key);
-			if (watcher == null) {
+			if (watcher == null) 
+			{
 				LOG.severe("WatchKey " + key + " not recognized!");
 				continue;
 			}
 
 			FileSystemListener listener = watcher.listener;
 			
-			for (WatchEvent<?> event : key.pollEvents()) {
-				if(event.kind() == OVERFLOW) {
-					try {
+			for (WatchEvent<?> event : key.pollEvents()) 
+			{
+				if(event.kind() == OVERFLOW) 
+				{
+					try 
+					{
 						listener.overflow(watcher.folder);
 					} catch(Exception e)
 					{
@@ -104,19 +124,22 @@ public class FileSystemWatcher {
 					}
 					continue;
 				} 
+				
 				Path p = (Path) event.context();
 				Path absPath = watcher.folder.resolve(p);
-				try {
-					if (event.kind() == ENTRY_CREATE) {
+				try 
+				{
+					if (event.kind() == ENTRY_CREATE) 
 						listener.added(absPath);
-					} else if (event.kind() == ENTRY_DELETE) {
+					else if (event.kind() == ENTRY_DELETE)
 						listener.removed(absPath);
-					} else if (event.kind() == ENTRY_MODIFY) {
+					else if (event.kind() == ENTRY_MODIFY)
 						listener.modified(absPath);
-					} else {
+					else 
 						LOG.warning("Unknown event kind: " + event.kind().name());
-					}
-				} catch (Exception e) {
+				} 
+				catch (Exception e) 
+				{
 					LOG.log(Level.WARNING, "Error handling file system event for " + absPath, e);
 				}
 			}

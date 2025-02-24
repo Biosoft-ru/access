@@ -4,7 +4,7 @@
 
  <groupId>ru.biosoft.access</groupId>
  <artifactId>file</artifactId>
- <version>2.0.0</version>
+ <version>2.0.0-SNAPSHOT</version>
  <packaging>jar</packaging>
 
  <name>File repository</name>
@@ -32,9 +32,9 @@
   </scm>
 
  <parent>
-  <groupId>ru.biosoft</groupId>
+  <groupId>ru.biosoft.access</groupId>
   <artifactId>access</artifactId>
-  <version>2.0.0</version>
+  <version>1.1.1</version>
  </parent>
 
  <dependencies>
@@ -42,13 +42,7 @@
   <dependency>
     <groupId>ru.biosoft.access</groupId>
     <artifactId>core</artifactId>
-    <version>2.0.0</version>
-  </dependency>
-
-  <dependency>
-    <groupId>ru.biosoft</groupId>
-    <artifactId>util</artifactId>
-    <version>[2.0.0,)</version>
+    <version>[1.1.0,)</version>
   </dependency>
 
   <dependency>

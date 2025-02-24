@@ -1,4 +1,4 @@
-package ru.biosoft.access.file;
+package ru.biosoft.access.file.v1;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ public class TestMultiThread {
 		Properties properties = new Properties();
 		properties.setProperty(DataCollectionConfigConstants.NAME_PROPERTY, "test");
 		properties.setProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY, "test");
-		FileDataCollection fdc = new FileDataCollection(null, properties );
+		FileDataCollectionV1 fdc = new FileDataCollectionV1(null, properties );
 
 		ScheduledExecutorService pool = Executors.newScheduledThreadPool(10);
 		

@@ -1,4 +1,4 @@
-package ru.biosoft.access.file.v1;
+package ru.biosoft.access.file;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,15 +41,14 @@ import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.Transformer;
 import ru.biosoft.access.file.FileBasedCollection;
-import ru.biosoft.access.file.FileSystemListener;
 import ru.biosoft.access.file.FileSystemWatcher;
 
-//TODO: inherit from FileBasedCollection
-public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection{
-	
-	private static final String BIOUML_YML_FILE = "biouml.yml";
+
+public class GenericFileDataCollection extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection
+{
+	private static final String YAML_FILE = ".info";
 	protected File rootFolder;
-	protected File ymlFile;//optional yml file
+	protected File yamlFile;//optional yml file
 
 	//Layer of descriptors, corresponding DataElements will be created in lazy way
 	private Map<String, DataElementDescriptor> descriptors = new ConcurrentHashMap<>();
@@ -63,11 +62,11 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 	
 	
 	//Constructor used by biouml framework
-	public FileDataCollectionV1(DataCollection<?> parent, Properties properties) throws IOException
+	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
 	{
 		super(parent, properties);
 		rootFolder = new File(properties.getProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY));
-		this.ymlFile = new File(rootFolder, BIOUML_YML_FILE);
+		this.yamlFile = new File(rootFolder, YAML_FILE);
 		
 		reInit();
 		
@@ -84,8 +83,10 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 		initFromFiles();
 	}
 	
-	private void reInitYaml() throws IOException {
-		yaml = Collections.emptyMap();
+	private void reInitYaml() throws IOException 
+	{
+/*
+	    yaml = Collections.emptyMap();
 		fileInfoByName = Collections.emptyMap();
 
 		try {
@@ -117,6 +118,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 			yaml = Collections.emptyMap();
 			fileInfoByName = Collections.emptyMap();
 		}
+*/		
 	}
 
 	private synchronized void initFromFiles() {
@@ -133,7 +135,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 	
 	private boolean isBioUMLYAML(File file)
 	{
-		return file.getName().equals(BIOUML_YML_FILE);
+		return file.getName().equals(YAML_FILE); 
 	}
 	
 	@Override
@@ -221,12 +223,12 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 		{
 			nameList.add(name);
 			sortNameList(nameList);
-			fireElementAdded(FileDataCollectionV1.this, name);
+			fireElementAdded(GenericFileDataCollection.this, name);
 		}else
 		{
 			DataElement oldFromCache = getFromCache(name);
 			removeFromCache(name);
-			fireElementChanged(FileDataCollectionV1.this, FileDataCollectionV1.this, name, oldFromCache, null);
+			fireElementChanged(GenericFileDataCollection.this, GenericFileDataCollection.this, name, oldFromCache, null);
 		}
 	}
 	
@@ -237,7 +239,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 		descriptors.remove(name);
 		DataElement oldFromCache = getFromCache(name);
 		removeFromCache(name);
-		fireElementRemoved(FileDataCollectionV1.this, name, oldFromCache);
+		fireElementRemoved(GenericFileDataCollection.this, name, oldFromCache);
 	}
 	
 
@@ -305,9 +307,9 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 					Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
 				}
 			}
-		} else if(dataElement instanceof FileDataCollectionV1)
+		} else if(dataElement instanceof GenericFileDataCollection)
 		{
-			FileDataCollectionV1 fdc = (FileDataCollectionV1) dataElement;
+			GenericFileDataCollection fdc = (GenericFileDataCollection) dataElement;
 			file = fdc.rootFolder;
 			storeElementProperties(fdc, null);
 		}
@@ -406,7 +408,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
     	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
 		Map<String, String> properties = fileInfo == null ? null : (Map<String, String>) fileInfo.get("properties");
     	if(file.isDirectory())
-    		return new DataElementDescriptor(FileDataCollectionV1.class, false, properties);
+    		return new DataElementDescriptor(GenericFileDataCollection.class, false, properties);
     	else
     	{
     		Transformer transformer = getTransformer(file);
@@ -439,7 +441,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
     		if(fileInfo != null && fileInfo.containsKey("properties"))
     			properties.putAll((Map)fileInfo.get("properties"));
     		
-            FileDataCollectionV1 result = new FileDataCollectionV1(this, properties);
+            GenericFileDataCollection result = new GenericFileDataCollection(this, properties);
             result.getInfo().addUsedFile(configPath);
             return result;
     	}
@@ -521,6 +523,7 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 	}
 	public void setFileInfo(Map<String, Object> properties) throws IOException
 	{
+/*	    
 		String name = (String) properties.get("name");
 
 		Map<String, Object> yaml;
@@ -557,5 +560,6 @@ public class FileDataCollectionV1 extends AbstractDataCollection<DataElement> im
 		Writer writer = new BufferedWriter(new FileWriter(ymlFile));
 		parser.dump(yaml, writer);
 		writer.close();
+*/		
 	}
 }

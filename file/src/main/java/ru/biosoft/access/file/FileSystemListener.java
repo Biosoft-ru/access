@@ -2,7 +2,8 @@ package ru.biosoft.access.file;
 
 import java.nio.file.Path;
 
-public interface FileSystemListener {
+public interface FileSystemListener 
+{
 	void added(Path path) throws Exception;
 	void removed(Path path) throws Exception;
 	void modified(Path path) throws Exception;

@@ -4,18 +4,12 @@
 
  <groupId>ru.biosoft.access</groupId>
  <artifactId>core</artifactId>
- <version>1.1.1</version>
+ <version>2.0.0</version>
  <packaging>jar</packaging>
 
  <name>Data access core</name>
  <description>Core classes for access to heterogenous biological data.</description>
   <url>https://github.com/Biosoft-ru/access</url>
-
-    <properties>
-      <encoding>UTF-8</encoding>
-      <maven.compiler.source>8</maven.compiler.source>
-      <maven.compiler.target>8</maven.compiler.target>
-    </properties>
 
     <licenses>
         <license>
@@ -38,9 +32,9 @@
   </scm>
 
  <parent>
-  <groupId>ru.biosoft.access</groupId>
+  <groupId>ru.biosoft</groupId>
   <artifactId>access</artifactId>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
  </parent>
 
  <dependencies>
@@ -54,7 +48,7 @@
   <dependency>
     <groupId>ru.biosoft</groupId>
     <artifactId>util</artifactId>
-    <version>[1.0.0,)</version>
+    <version>[2.0.0,)</version>
   </dependency>
 
   <dependency>
