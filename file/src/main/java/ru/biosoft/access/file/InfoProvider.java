@@ -3,10 +3,13 @@ package ru.biosoft.access.file;
 import java.util.List;
 import java.util.Map;
 
-public interface InfoProvider 
+import ru.biosoft.access.core.DataCollectionListener;
+
+public interface InfoProvider extends DataCollectionListener
 {
     /**
-     * Returns properties for GenericFileDataCollection. 
+     * Returns properties for GenericFileDataCollection.
+     * These properties can be used to create GenericFileDataCollection. 
      */
     public Map<String, Object> getProperties();
 

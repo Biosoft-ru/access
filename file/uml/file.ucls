@@ -13,7 +13,7 @@
   </class>  
   <class id="2" language="java" name="ru.biosoft.access.file.FileSystemWatcher.Watcher" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/FileSystemWatcher.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="644" y="317"/>    
+    <position height="-1" width="-1" x="1575" y="487"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -22,7 +22,7 @@
   </class>  
   <class id="3" language="java" name="ru.biosoft.access.file.FileSystemWatcher" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/FileSystemWatcher.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="178" width="306" x="499" y="37"/>    
+    <position height="-1" width="-1" x="1582" y="296"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -31,7 +31,7 @@
   </class>  
   <interface id="4" language="java" name="ru.biosoft.access.file.FileSystemListener" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/FileSystemListener.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="656" y="502"/>    
+    <position height="-1" width="-1" x="1559" y="666"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -52,82 +52,133 @@
     <position height="-1" width="-1" x="1524" y="156"/>    
     <display autosize="true" stereotype="true" sort-features="false" accessors="true"/>  
   </package>  
-  <class id="7" language="java" name="ru.biosoft.access.core.DataElementDescriptor" project="core" 
-    file="/core/src/main/java/ru/biosoft/access/core/DataElementDescriptor.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="567" y="758"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <interface id="8" language="java" name="ru.biosoft.access.file.InfoProvider" project="file" 
+  <interface id="7" language="java" name="ru.biosoft.access.file.InfoProvider" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/InfoProvider.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="268" y="92"/>    
+    <position height="-1" width="-1" x="273" y="309"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <class id="9" language="java" name="ru.biosoft.access.file.MemoryInfoProvider" project="file" 
+  <class id="8" language="java" name="ru.biosoft.access.file.MemoryInfoProvider" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/MemoryInfoProvider.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="270" y="266"/>    
+    <position height="-1" width="-1" x="275" y="483"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="10" language="java" name="ru.biosoft.access.file.YamlInfoProvider" project="file" 
+  <class id="9" language="java" name="ru.biosoft.access.file.YamlInfoProvider" project="file" 
     file="/file/src/main/java/ru/biosoft/access/file/YamlInfoProvider.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="270" y="437"/>    
+    <position height="-1" width="-1" x="275" y="654"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <realization id="11">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="8"/>  
-  </realization>  
-  <generalization id="12">    
-    <end type="SOURCE" refId="10"/>    
-    <end type="TARGET" refId="9"/>  
-  </generalization>  
-  <association id="13">    
+  <interface id="10" language="java" name="ru.biosoft.access.core.DataCollectionListener" project="core" 
+    file="/core/src/main/java/ru/biosoft/access/core/DataCollectionListener.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="272" y="121"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </interface>  
+  <class id="11" language="java" name="ru.biosoft.access.file.FileType" project="file" 
+    file="/file/src/main/java/ru/biosoft/access/file/FileType.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="670" y="138"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="12" language="java" name="ru.biosoft.access.file.FileTypeRegistryImpl" project="file" 
+    file="/file/src/main/java/ru/biosoft/access/file/FileTypeRegistryImpl.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="796" y="452"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="13" language="java" name="ru.biosoft.access.file.FileTypeRegistry" project="file" 
+    file="/file/src/main/java/ru/biosoft/access/file/FileTypeRegistry.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="557" y="417"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <association id="14">    
+    <end type="SOURCE" refId="13" navigable="false">      
+      <attribute id="15" name="registry"/>      
+      <multiplicity id="16" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="12" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="17">    
     <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="14" name="watchers"/>      
-      <multiplicity id="15" minimum="0" maximum="2147483647"/>    
+      <attribute id="18" name="watchers">        
+        <position height="0" width="0" x="931" y="170"/>      
+      </attribute>      
+      <multiplicity id="19" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="931" y="170"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="2" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="16">    
+  <generalization id="20">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="8"/>  
+  </generalization>  
+  <association id="21">    
     <end type="SOURCE" refId="2" navigable="false">      
-      <attribute id="17" name="listener"/>      
-      <multiplicity id="18" minimum="0" maximum="1"/>    
+      <attribute id="22" name="listener">        
+        <position height="0" width="0" x="903" y="164"/>      
+      </attribute>      
+      <multiplicity id="23" minimum="0" maximum="1">        
+        <position height="0" width="0" x="903" y="164"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting id="19">    
+  <nesting id="24">    
     <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="2"/>  
   </nesting>  
-  <association id="20">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="21" name="descriptors"/>      
-      <multiplicity id="22" minimum="0" maximum="2147483647"/>    
+  <generalization id="25">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="10"/>  
+  </generalization>  
+  <realization id="26">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="7"/>  
+  </realization>  
+  <association id="27">    
+    <end type="SOURCE" refId="12" navigable="false">      
+      <attribute id="28" name="fileTypeMap"/>      
+      <multiplicity id="29" minimum="0" maximum="2147483647"/>    
     </end>    
-    <end type="TARGET" refId="7" navigable="true"/>    
+    <end type="TARGET" refId="11" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="23">    
+  <association id="30">    
     <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="24" name="INSTANCE"/>      
-      <multiplicity id="25" minimum="0" maximum="1"/>    
+      <attribute id="31" name="INSTANCE">        
+        <position height="0" width="0" x="930" y="170"/>      
+      </attribute>      
+      <multiplicity id="32" minimum="0" maximum="1">        
+        <position height="0" width="0" x="930" y="170"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="3" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
