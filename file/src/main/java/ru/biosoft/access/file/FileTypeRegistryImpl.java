@@ -23,10 +23,10 @@ public class FileTypeRegistryImpl
             {
                 FileType ft = fileTypeMap.get(extension);
 
-                if( ft.getPriority() > fileType.getPriority() )
+                if( ft.getPriority().isHigher(fileType.getPriority()) )
                     continue;
                 
-                else if(ft.getPriority() < fileType.getPriority() )
+                else if( fileType.getPriority().isHigher(ft.getPriority()) )
                     fileTypeMap.put(extension, fileType);
                 
                 else // ft.getPriority() == fileType.getPriority() 

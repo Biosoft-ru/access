@@ -43,6 +43,11 @@
   <module>file</module>
  </modules>
 
+<properties>
+   <encoding>UTF-8</encoding>
+   <maven.compiler.source>21</maven.compiler.source>
+   <maven.compiler.target>21</maven.compiler.target>
+ </properties>
  <build>
   <plugins>
 

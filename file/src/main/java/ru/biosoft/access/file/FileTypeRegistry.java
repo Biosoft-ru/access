@@ -3,8 +3,8 @@ package ru.biosoft.access.file;
 import java.io.File;
 import java.util.logging.Logger;
 
-import ru.biosoft.access.core.DataElementImporter;
 import ru.biosoft.access.core.Environment;
+import ru.biosoft.access.core.FileTypePriority;
 
 public class FileTypeRegistry 
 {
@@ -13,11 +13,11 @@ public class FileTypeRegistry
 
     public static final FileType FILE_TYPE_TEXT = new FileType(
             new String[] {"", "txt"}, "ru.biosoft.access.file.FileTextTransformer",
-            DataElementImporter.ACCEPT_LOW_PRIORITY, "Text file.");
+            FileTypePriority.LOW_PRIORITY, "Text file.");
 
     public static final FileType FILE_TYPE_BINARY = new FileType(
             new String[] {""}, null,
-            DataElementImporter.ACCEPT_LOWEST_PRIORITY, "Binary file.");
+            FileTypePriority.LOWEST_PRIORITY, "Binary file.");
     
     protected static final Logger log = Logger.getLogger( FileTypeRegistry.class.getName() );
     private static FileTypeRegistryImpl registry;

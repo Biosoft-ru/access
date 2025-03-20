@@ -3,6 +3,9 @@ package ru.biosoft.access.file;
 import java.util.List;
 import java.util.Map;
 
+import ru.biosoft.access.core.DataCollectionEvent;
+import ru.biosoft.access.core.DataCollectionVetoException;
+
 /**
  * Implements InfoProvider that stores all information in memory.
  */
@@ -32,6 +35,48 @@ public class MemoryInfoProvider implements InfoProvider
     public List<String> getDataCollections()
     {
         return null;
+    }
+
+    @Override
+    public void elementAdded(DataCollectionEvent e) throws Exception
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void elementWillAdd(DataCollectionEvent e) throws DataCollectionVetoException, Exception
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void elementChanged(DataCollectionEvent e) throws Exception
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void elementWillChange(DataCollectionEvent e) throws DataCollectionVetoException, Exception
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void elementRemoved(DataCollectionEvent e) throws Exception
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void elementWillRemove(DataCollectionEvent e) throws DataCollectionVetoException, Exception
+    {
+        // TODO Auto-generated method stub
+
     }
 
 }

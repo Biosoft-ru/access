@@ -1,8 +1,5 @@
 package ru.biosoft.access.core;
 
-import ru.biosoft.access.core.DataElement;
-import ru.biosoft.access.core.Transformer;
-
 /**
  * Adds getPriority functionality to {@link Transformer} implementations
  */

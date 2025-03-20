@@ -1,5 +1,7 @@
 package ru.biosoft.access.file;
 
+import ru.biosoft.access.core.FileTypePriority;
+
 /**
  * Describes file type and corresponding transformer.
  * 
@@ -24,8 +26,9 @@ public class FileType
     public String getTransformerClassName() 
     { return transformerClassName; }
     
-    protected int priority;
-    public int getPriority()
+    protected FileTypePriority priority;
+
+    public FileTypePriority getPriority()
     { return priority; } 
 
     protected String description;
@@ -34,7 +37,7 @@ public class FileType
     
     public FileType(String[] extensions, String transformerClassName)
     {
-        this(extensions, transformerClassName, 10, null);
+        this(extensions, transformerClassName, FileTypePriority.MEDIUM_PRIORITY, null);
     }
 
     /**
@@ -44,7 +47,7 @@ public class FileType
      * @param priority {@link ru.biosoft.access.core.DataElementImporter} priorities are used.
      */
     public FileType(String[] extensions, String transformerClassName,
-                    int priority, String description)
+            FileTypePriority priority, String description)
     {
         this.extensions  = extensions;
         this.priority    = priority;
