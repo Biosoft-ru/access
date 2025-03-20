@@ -1,6 +1,7 @@
 package ru.biosoft.access.file;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.regex.Pattern;
 
 import ru.biosoft.access.core.DataCollection;
@@ -28,7 +29,7 @@ public class FileTextTransformer extends AbstractFileTransformer<TextDataElement
 
     @Override
     public Class<? extends TextDataElement> getOutputType()
-    {
+    {//
         return TextDataElement.class;
     }
 
@@ -41,16 +42,13 @@ public class FileTextTransformer extends AbstractFileTransformer<TextDataElement
     @Override
     public TextDataElement load(File input, String name, DataCollection<TextDataElement> origin) throws Exception
     {
-        // @todo
-        return null;
-        //return new TextDataElement(name, origin, ApplicationUtils.readAsString(input));
+        return new TextDataElement(name, origin, Files.readString(input.toPath()));
     }
 
     @Override
     public void save(File output, TextDataElement element) throws Exception
     {
-        // @todo
-        //ApplicationUtils.writeString(output, element.getContent());
+        Files.writeString(output.toPath(), element.getContent());
     }
 
     @Override

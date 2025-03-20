@@ -63,6 +63,7 @@ public class YamlValidator
 		Map<?,?> m = (Map<?, ?>) obj;
 		Set<String> allowedKeys = new HashSet<>();
         allowedKeys.add( "name" );
+        allowedKeys.add( "type" );
         allowedKeys.add( "format" );
         allowedKeys.add( "transformer" );
         allowedKeys.add( "properties" );
