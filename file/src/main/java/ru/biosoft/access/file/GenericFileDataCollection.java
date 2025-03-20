@@ -1,10 +1,7 @@
 package ru.biosoft.access.file;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,22 +9,16 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
-
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
@@ -35,20 +26,16 @@ import ru.biosoft.access.core.DataCollectionConfigConstants;
 import ru.biosoft.access.core.DataCollectionInfo;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementDescriptor;
-import ru.biosoft.access.core.DataElementPath;
 import ru.biosoft.access.core.DataElementPutException;
 import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.Transformer;
-import ru.biosoft.access.file.FileBasedCollection;
-import ru.biosoft.access.file.FileSystemWatcher;
 
 
 public class GenericFileDataCollection extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection
 {
-	private static final String YAML_FILE = ".info";
 	protected File rootFolder;
-	protected File yamlFile;//optional yml file
+	private InfoProvider infoProvider;
 
 	//Layer of descriptors, corresponding DataElements will be created in lazy way
 	private Map<String, DataElementDescriptor> descriptors = new ConcurrentHashMap<>();
@@ -56,70 +43,50 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	//Sorted name list, folders first
 	private List<String> nameList;
 	
-	//Parsed content of yaml file
-	private Map<String, Object> yaml;
-	private Map<String, Map<String, Object>> fileInfoByName;
-	
 	
 	//Constructor used by biouml framework
 	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
 	{
 		super(parent, properties);
 		rootFolder = new File(properties.getProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY));
-		this.yamlFile = new File(rootFolder, YAML_FILE);
+		
+		createInfoProvider(properties);
+		getInfo().getProperties().putAll(infoProvider.getProperties());
 		
 		reInit();
 		
 		watchFolder();
 	}
 	
+	private void createInfoProvider(Properties properties) throws IOException {
+		// TODO Auto-generated method stub
+		String infoProviderStr = properties.getProperty("infoProvider", "yaml");
+		switch(infoProviderStr)
+		{
+		case "yaml":
+			infoProvider = new YamlInfoProvider(rootFolder);break;
+		case "sql":
+			throw new IllegalArgumentException("sql info provider not yet supported");
+		default:
+			throw new IllegalArgumentException("Unknown info provider: " + infoProviderStr);
+		}
+		infoProvider.addListener(new InfoProviderListener() {
+			@Override
+			public void infoChanged() throws Exception {
+				reInit();
+			}
+		});
+	}
+
 	public synchronized void reInit() throws IOException
 	{
 		v_cache.clear();
 		descriptors.clear();
 		nameList = new CopyOnWriteArrayList<String>();
-		
-		reInitYaml();
 		initFromFiles();
 	}
 	
-	private void reInitYaml() throws IOException 
-	{
-/*
-	    yaml = Collections.emptyMap();
-		fileInfoByName = Collections.emptyMap();
-
-		try {
-			if (!ymlFile.exists())
-				return;
-			YamlParser parser = new YamlParser();
-			byte[] bytes = Files.readAllBytes(ymlFile.toPath());
-			String text = new String(bytes);
-			yaml = parser.parseYaml(text);
-			
-			fileInfoByName = new HashMap<>();
-			Object filesObj = yaml.get("files");
-			if (filesObj != null) {
-				List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
-				for (Map<String, Object> fileInfo : files) {
-					String name = (String) fileInfo.get("name");
-					fileInfoByName.put(name, fileInfo);
-				}
-			}
-
-			// Properties of this collection
-			Object propsObj = yaml.get("properties");
-			if (propsObj instanceof Map) {
-				Map<String, String> props = (Map<String, String>) propsObj;
-				getInfo().getProperties().putAll(props);
-			}
-		} catch (Exception e) {
-			log.log(Level.WARNING, "Can not init from biouml.yml, file will be ignored", e);
-			yaml = Collections.emptyMap();
-			fileInfoByName = Collections.emptyMap();
-		}
-*/		
-	}
+	
 
 	private synchronized void initFromFiles() {
 		for(File file : rootFolder.listFiles())
@@ -133,30 +100,27 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		sortNameList(nameList);
 	}
 	
-	private boolean isBioUMLYAML(File file)
-	{
-		return file.getName().equals(YAML_FILE); 
-	}
+
 	
 	@Override
 	public boolean isFileAccepted(File file)
 	{
-		if(isBioUMLYAML(file))
+		if(YamlInfoProvider.isBioUMLYAML(file))
 			return false;
-		boolean recursive = (Boolean) yaml.getOrDefault("recursive", true);
+		boolean recursive = (Boolean) infoProvider.getProperties().getOrDefault("recursie", true);
 		if(recursive && file.isDirectory())
 			return true;
-		String fileFilter = (String) yaml.get("fileFilter");
+		String fileFilter = (String)infoProvider.getProperties().get("fileFilter");;
 		if(fileFilter == null)
 			return true;
 		PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher( "glob:" + fileFilter );
 		return pathMatcher.matches(Paths.get(file.getName()));
 	}
+	
 	@Override
 	public File getChildFile(String name) {
 		return new File(rootFolder, name);
 	}
-	
 	
 	private WatchKey watchKey;
 	private void watchFolder() throws IOException {
@@ -165,11 +129,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			@Override
 			public void added(Path path)throws Exception {
 				File file = path.toFile();
-				if(isBioUMLYAML(file))
-				{
-					reInit();
-					return;
-				}
 				if(!isFileAccepted(file))
 					return;
 				
@@ -180,11 +139,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			public void removed(Path path) throws Exception {
 				File file = path.toFile();
 				String name = file.getName();
-				if(isBioUMLYAML(file))
-				{
-					reInit();
-					return;
-				}
 				if(!isFileAccepted(file))
 					return;
 
@@ -194,11 +148,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			@Override
 			public void modified(Path path) throws Exception {
 				File file = path.toFile();
-				if(isBioUMLYAML(file))//TODO: detect what elements were changed and update only them
-				{
-					reInit();
-					return;
-				}
 				if(!isFileAccepted(file))
 					return;
 				
@@ -291,11 +240,11 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
-		ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
 		File file;
-		if(dataElement.getClass().equals( ENV.getFileDataElementClass() ))
+		if(dataElement.getClass().equals( FileDataElement.class ))
 		{
-			File existing = ENV.getFile(dataElement);
+			FileDataElement fde = (FileDataElement) dataElement;
+			File existing = fde.getFile();
 			file = getChildFile(dataElement.getName());
 			
 			if(!file.equals(existing))
@@ -314,20 +263,21 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			storeElementProperties(fdc, null);
 		}
 		else {
+			ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
 			Transformer t = ENV.getTransformerForDataElement(dataElement);
 			if (t == null)
 				throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
 			t.init(this, this);
-			DataElement fileDataElement = t.transformOutput(dataElement); // Transformer will put file into folder
-			storeElementProperties(dataElement, t.getClass());
-			file = ENV.getFile(fileDataElement);
+			FileDataElement fde = (FileDataElement)t.transformOutput(dataElement); // Transformer will put file into folder
+			storeElementProperties(fde, t.getClass());
+			file = fde.getFile();
 		}
 		
 		
 		fileUpdated(file);
     }
 
-	public void storeElementProperties(DataElement de, Class<?> transformerClass) throws IOException {
+	public void storeElementProperties(DataElement de, Class<?> transformerClass) throws Exception {
 		Map<String, Object> propertiesAsMap = new LinkedHashMap<>();
 		if(de instanceof DataCollection)
 		{
@@ -400,19 +350,19 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     
     @Override
     public boolean isAcceptable(Class<? extends DataElement> clazz) {
-    	return ru.biosoft.access.file.v1.Environment.INSTANCE.getFileDataElementClass().equals(clazz)
+    	return FileDataElement.class.equals(clazz)
     			|| clazz.isAssignableFrom(FolderCollection.class);
     }
     
     private DataElementDescriptor createDescriptor(File file) {
-    	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+    	Map<String, Object> fileInfo = infoProvider.getFileInfo(file.getName());
 		Map<String, String> properties = fileInfo == null ? null : (Map<String, String>) fileInfo.get("properties");
     	if(file.isDirectory())
     		return new DataElementDescriptor(GenericFileDataCollection.class, false, properties);
     	else
     	{
     		Transformer transformer = getTransformer(file);
-    		Class<? extends DataElement> outputType = transformer == null ?  ru.biosoft.access.file.v1.Environment.INSTANCE.getFileDataElementClass() : transformer.getOutputType();
+    		Class<? extends DataElement> outputType = transformer == null ?  FileDataElement.class : transformer.getOutputType();
     		return new DataElementDescriptor(outputType, true, properties);
     	}
 	}
@@ -429,25 +379,30 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     		Properties properties = new Properties();
     		properties.setProperty(DataCollectionConfigConstants.NAME_PROPERTY, file.getName());
     		properties.setProperty(DataCollectionConfigConstants.FILE_PATH_PROPERTY, file.getAbsolutePath());
-    		
+
+    		/*
     		//Config path is required to store biouml speciic indices such as JDBM2Index for fasta
     		File configPath = new File(getInfo().getProperty(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY), file.getName());
     		if(!configPath.exists())
     			configPath.mkdirs();
     		
     		properties.setProperty(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY, configPath.getAbsolutePath());
+    		*/
     		
-    		Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+    		
+    		Map<String, Object> fileInfo = infoProvider.getFileInfo(file.getName());
     		if(fileInfo != null && fileInfo.containsKey("properties"))
     			properties.putAll((Map)fileInfo.get("properties"));
     		
             GenericFileDataCollection result = new GenericFileDataCollection(this, properties);
-            result.getInfo().addUsedFile(configPath);
+            
+            //result.getInfo().addUsedFile(configPath);
+            
             return result;
     	}
-        DataElement fda = ru.biosoft.access.file.v1.Environment.INSTANCE.createFileDataElement(file.getName(), this, file);
+        FileDataElement fda = new FileDataElement(file.getName(), this, file);
         
-        Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
+        Map<String, Object> fileInfo = infoProvider.getFileInfo(file.getName());
         Transformer transformer = getTransformer(file);
         if(transformer == null)
             return fda;
@@ -465,17 +420,18 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 
     private Transformer getTransformer(File file)
     {
-    	//transformer can be set in biouml.yaml or auto-detected based on file extension
-    	Map<String, Object> fileInfo = fileInfoByName.get(file.getName());
-    	if(fileInfo != null && fileInfo.containsKey("transformer"))
+    	//file type can be set in .info or auto-detected based on file extension
+    	Map<String, Object> fileInfo = infoProvider.getFileInfo(file.getName());
+    	if(fileInfo != null && fileInfo.containsKey("type"))
 		{
-    		String transformerClassName = (String) fileInfo.get("transformer");
-			Class<? extends Transformer> clazz = Environment.loadClass(transformerClassName, Transformer.class);
-			try {
-				return clazz.newInstance();
-			} catch (InstantiationException|IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
+    		String type = (String) fileInfo.get("type");
+    		FileType ft = FileTypeRegistry.getFileType(type);
+    		if(ft == null)
+    		{
+    			log.warning("Can not find " + type + " in FileTypeRegistry");
+    			return null;
+    		}
+    		return createTransformer(ft.getTransformerClassName());
 		}
         return getTransformerBasedOnFile(file);
         //TODO: transformerParameters
@@ -483,13 +439,27 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     
     private Transformer  getTransformerBasedOnFile(File file)
     {
-    	return ru.biosoft.access.file.v1.Environment.INSTANCE.getTransformerForFile(file);
+    	FileType ft = FileTypeRegistry.detectFileType(file);
+    	return createTransformer(ft.getTransformerClassName());
+    }
+    
+    private static Transformer createTransformer(String className)
+    {
+    	if(className == null)
+    		return null;
+    	Class<? extends Transformer> clazz = Environment.loadClass(className, Transformer.class);
+		try {
+			return clazz.newInstance();
+		} catch (InstantiationException|IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
     }
 
 
     @Override
     public void close() throws Exception {
     	super.close();
+    	infoProvider.close();
     	FileSystemWatcher.INSTANCE.stopWatching(watchKey);
     }
     
@@ -513,7 +483,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	
 	public Map<String, Object> getFileInfo(String name)
 	{
-		Map<String, Object> res = fileInfoByName.get(name);
+		Map<String, Object> res = infoProvider.getFileInfo(name);
 		if(res == null)
 		{
 			res = new LinkedHashMap<>();
@@ -521,45 +491,9 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		}
 		return res;
 	}
-	public void setFileInfo(Map<String, Object> properties) throws IOException
+	
+	public void setFileInfo(Map<String, Object> properties) throws Exception
 	{
-/*	    
-		String name = (String) properties.get("name");
-
-		Map<String, Object> yaml;
-		if(ymlFile.exists()) {
-			YamlParser parser = new YamlParser();
-			byte[] bytes = Files.readAllBytes(ymlFile.toPath());
-			String text = new String(bytes);
-			yaml = parser.parseYaml(text);
-		}else
-			yaml = new HashMap<>();
-
-		fileInfoByName = new HashMap<>();
-		Object filesObj = yaml.get("files");
-		if(filesObj == null)
-			yaml.put("files", filesObj = new ArrayList<>());
-		List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
-		boolean found = false;
-		for (int i = 0; i < files.size(); i++) {
-			Map<String, Object> fileInfo = files.get(i);
-			if (name.equals(fileInfo.get("name")))
-			{
-				files.set(i, properties);
-				found = true;
-				break;
-			}
-		}
-		if(!found)
-			files.add(properties);
-		
-		DumperOptions options = new DumperOptions();
-		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-		options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
-		Yaml parser = new Yaml(options);
-		Writer writer = new BufferedWriter(new FileWriter(ymlFile));
-		parser.dump(yaml, writer);
-		writer.close();
-*/		
+		infoProvider.setFileInfo(properties);
 	}
 }
