@@ -1,37 +1,61 @@
 package ru.biosoft.access.file;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Implements InfoProvider that stores all information in memory.
  */
 public class MemoryInfoProvider implements InfoProvider 
 {
-    /**
-     * Returns properties for GenericFileDataCollection. 
-     */
-    public Map<String, Object> getProperties()
+	protected Properties properties = new Properties();
+	
+	protected Map<String, Map<String, Object>> fileInfoByName = new LinkedHashMap<>();
+	
+	protected List<String> collections = new ArrayList<>();
+	
+    public Properties getProperties()
     {
-        return null;
+        return properties;
     }
 
-    /**
-     * Returns properties for the specified file name.
-     */
     public Map<String, Object> getFileInfo(String fileName)
     {
-        return null;
+        return fileInfoByName.get(fileName);
     }
     
-    /**
-     * Returns list of names for data collections that do not correspond files.
-     * By this way GenericDataCollection can include not file based data collections,
-     * for example SQLDataCollection.
-     */
+	@Override
+	public void setFileInfo(Map<String, Object> fileInfo) throws Exception {
+		String name = (String) fileInfo.get("name");
+		fileInfoByName.put(name, fileInfo);
+	}
+    
     public List<String> getDataCollections()
     {
-        return null;
+        return collections;
     }
+
+    
+    private List<InfoProviderListener> listeners = new ArrayList<>();
+    
+	@Override
+	public void addListener(InfoProviderListener l) {
+		listeners.add(l);
+	}
+	
+	protected void fireInfoChanged() throws Exception
+	{
+		for(InfoProviderListener l : listeners)
+			l.infoChanged();
+	}
+
+	@Override
+	public void close() throws Exception {
+		
+	}
+
 
 }

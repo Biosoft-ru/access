@@ -16,6 +16,11 @@ package ru.biosoft.access.file;
  */
 public class FileType 
 {
+	protected String name;
+	public String getName() {
+		return name;
+	}
+	
     protected String[] extensions;
     public String[] getExtensions()     
     { return extensions; }
@@ -24,17 +29,19 @@ public class FileType
     public String getTransformerClassName() 
     { return transformerClassName; }
     
+    
+    //useless
     protected int priority;
     public int getPriority()
-    { return priority; } 
-
+    { return priority; }
+    
     protected String description;
     public String getDescription()
     { return description; } 
     
-    public FileType(String[] extensions, String transformerClassName)
+    public FileType(String name, String[] extensions, String transformerClassName)
     {
-        this(extensions, transformerClassName, 10, null);
+        this(name, extensions, transformerClassName, 10, null);
     }
 
     /**
@@ -43,9 +50,10 @@ public class FileType
      * If null then transformation is not applied.
      * @param priority {@link ru.biosoft.access.core.DataElementImporter} priorities are used.
      */
-    public FileType(String[] extensions, String transformerClassName,
+    public FileType(String name, String[] extensions, String transformerClassName,
                     int priority, String description)
     {
+    	this.name = name;
         this.extensions  = extensions;
         this.priority    = priority;
         this.description = description;
