@@ -20,8 +20,6 @@ import java.util.logging.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import ru.biosoft.access.file.v1.YamlParser;
-
 /**
  * Implements InfoProvider that stores all information in memory.
  */
@@ -153,7 +151,11 @@ public class YamlInfoProvider extends MemoryInfoProvider
 			Object propsObj = yaml.get("properties");
 			if (propsObj instanceof Map) {
 				Map<String, String> props = (Map<String, String>) propsObj;
-				properties.putAll(props);
+                for ( String propName : props.keySet() )
+                {
+                    properties.setProperty(propName, String.valueOf(props.get(propName)));
+                }
+                //properties.putAll(props);
 			}
 			
 			collections.clear();

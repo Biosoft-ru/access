@@ -496,4 +496,16 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	{
 		infoProvider.setFileInfo(properties);
 	}
+
+    public static DataCollection<?> initGenericFileDataCollection(DataCollection parent, File dir) throws Exception
+    {
+        Properties properties = new Properties();
+        properties.put(DataCollectionConfigConstants.CLASS_PROPERTY, GenericFileDataCollection.class.getName());
+        properties.put(DataCollectionConfigConstants.NAME_PROPERTY, dir.getName());
+        properties.put(DataCollectionConfigConstants.FILE_PATH_PROPERTY, dir.getPath());
+        //Read all properties from yaml file so they could be used in super constructor 
+        YamlInfoProvider provider = new YamlInfoProvider(dir);
+        properties.putAll(provider.getProperties());
+        return new GenericFileDataCollection(parent, properties);
+    }
 }
