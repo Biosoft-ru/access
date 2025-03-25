@@ -407,12 +407,20 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
         if(transformer == null)
             return fda;
         transformer.init( this, this );
+
+        //@todo: pass Properties to transformer before element is created
         DataElement result = transformer.transformInput( fda );
         if(result instanceof DataCollection)
         {
         	Properties properties = ((DataCollection) result).getInfo().getProperties();
         	if(fileInfo != null && fileInfo.containsKey("properties"))
-    			properties.putAll((Map)fileInfo.get("properties"));
+            {
+                Map fileInfoMap = (Map) fileInfo.get("properties");
+                for ( Object propertyName : fileInfoMap.keySet() )
+                {
+                    properties.setProperty(String.valueOf(propertyName), String.valueOf(fileInfoMap.get(propertyName)));
+                }
+            }
         }
         
 		return result;
