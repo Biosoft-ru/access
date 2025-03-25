@@ -9,7 +9,7 @@ import ru.biosoft.access.core.CloneableDataElement;
 import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementSupport;
-import ru.biosoft.util.TextUtilities;
+import ru.biosoft.util.TextUtil;
 
 import com.developmentontheedge.beans.annot.PropertyName;
 
@@ -64,7 +64,7 @@ public class FileDataElement extends DataElementSupport implements CloneableData
 
     public String getReadableContentLength()
     {
-        return TextUtilities.formatSize(getContentLength());
+        return TextUtil.formatSize(getContentLength());
     }
 
     /**

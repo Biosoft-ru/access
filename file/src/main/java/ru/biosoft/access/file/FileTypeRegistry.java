@@ -1,9 +1,12 @@
 package ru.biosoft.access.file;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import ru.biosoft.access.core.FileTypePriority;
 
@@ -69,10 +72,32 @@ public class FileTypeRegistry {
 		if (ft != null)
 			return ft;
 
-		if (true)// todo FileImporter.isTextFile(file) )
+        if( isTextFile(file) )
 			return FILE_TYPE_TEXT;
 
 		return FILE_TYPE_BINARY;
 	}
+
+    public static boolean isTextFile(File file)
+    {
+        StringBuilder sb = new StringBuilder("");
+        int limit = 255;
+        try (Stream<String> lines = Files.lines(file.toPath()))
+        {
+            lines.takeWhile(s -> {
+                return sb.length() < limit;
+            }).forEachOrdered(s -> {
+                sb.append(s);
+            });
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+
+        String header = sb.toString();
+        double probBinary = header.chars().filter(ch -> !Character.isLetter(ch) && !(ch >= 32 && ch <= 127) && ch != '\n' && ch != '\r' && ch != '\t').count();
+        return (probBinary / header.length() < 0.3);
+    }
 
 }
