@@ -2,6 +2,7 @@ package ru.biosoft.access.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +30,7 @@ import ru.biosoft.access.core.DataElementDescriptor;
 import ru.biosoft.access.core.DataElementPutException;
 import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
+import ru.biosoft.access.core.PropertiesHolder;
 import ru.biosoft.access.core.Transformer;
 
 
@@ -409,18 +411,25 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
         transformer.init( this, this );
 
         //@todo: pass Properties to transformer before element is created
+        Properties propertiesFromYaml = new Properties();
+        if( fileInfo != null && fileInfo.containsKey("properties") )
+        {
+            Map fileInfoMap = (Map) fileInfo.get("properties");
+            for ( Object propertyName : fileInfoMap.keySet() )
+            {
+                propertiesFromYaml.setProperty(String.valueOf(propertyName), String.valueOf(fileInfoMap.get(propertyName)));
+            }
+        }
+        if( transformer instanceof PropertiesHolder )
+        {
+            ((PropertiesHolder) transformer).setProperties(propertiesFromYaml);
+        }
+
         DataElement result = transformer.transformInput( fda );
         if(result instanceof DataCollection)
         {
         	Properties properties = ((DataCollection) result).getInfo().getProperties();
-        	if(fileInfo != null && fileInfo.containsKey("properties"))
-            {
-                Map fileInfoMap = (Map) fileInfo.get("properties");
-                for ( Object propertyName : fileInfoMap.keySet() )
-                {
-                    properties.setProperty(String.valueOf(propertyName), String.valueOf(fileInfoMap.get(propertyName)));
-                }
-            }
+            properties.putAll(propertiesFromYaml);
         }
         
 		return result;
@@ -457,8 +466,10 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     		return null;
     	Class<? extends Transformer> clazz = Environment.loadClass(className, Transformer.class);
 		try {
-			return clazz.newInstance();
-		} catch (InstantiationException|IllegalAccessException e) {
+            return clazz.getDeclaredConstructor().newInstance();
+        }
+        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
+        {
 			throw new RuntimeException(e);
 		}
     }
