@@ -242,7 +242,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
-		File file;
+        File file = null;
 		if(dataElement.getClass().equals( FileDataElement.class ))
 		{
 			FileDataElement fde = (FileDataElement) dataElement;
@@ -253,38 +253,47 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			{
 				try {
 					Files.createLink(file.toPath(), existing.toPath());
-				} catch(IOException e)
+                }
+                catch (IOException e)
 				{
 					Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
 				}
 			}
-		} else if(dataElement instanceof GenericFileDataCollection)
+        }
+        else if( dataElement instanceof GenericFileDataCollection )
 		{
 			GenericFileDataCollection fdc = (GenericFileDataCollection) dataElement;
 			file = fdc.rootFolder;
 			storeElementProperties(fdc, null);
 		}
-		else {
+        else
+        {
 			ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
 			Transformer t = ENV.getTransformerForDataElement(dataElement);
 			if (t == null)
 				throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
 			t.init(this, this);
 			FileDataElement fde = (FileDataElement)t.transformOutput(dataElement); // Transformer will put file into folder
-			storeElementProperties(fde, t.getClass());
+            Properties properties = null;
+            if( dataElement instanceof PropertiesHolder )
+                properties = ((PropertiesHolder) dataElement).getProperties();
+            storeElementProperties(fde, t.getClass(), properties);
 			file = fde.getFile();
 		}
-		
 		
 		fileUpdated(file);
     }
 
-	public void storeElementProperties(DataElement de, Class<?> transformerClass) throws Exception {
+    public void storeElementProperties(DataElement de, Class<?> transformerClass) throws Exception
+    {
+        storeElementProperties(de, transformerClass, de instanceof DataCollection ? ((DataCollection) de).getInfo().getProperties() : null);
+    }
+
+    public void storeElementProperties(DataElement de, Class<?> transformerClass, Properties properties) throws Exception
+    {
 		Map<String, Object> propertiesAsMap = new LinkedHashMap<>();
-		if(de instanceof DataCollection)
+        if( properties != null )
 		{
-			Properties properties = ((DataCollection)de).getInfo().getProperties();
-			
 			for(Object key : properties.keySet())
 			{
 				Object value = properties.get(key);
@@ -305,6 +314,34 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			fileInfo.put("transformer", transformerClass.getName());
 		setFileInfo(fileInfo);
 	}
+
+    public void storeElementProperties1(DataElement de, Properties properties) throws Exception
+    {
+        Map<String, Object> propertiesAsMap = new LinkedHashMap<>();
+        if( properties != null )
+        {
+            for ( Object key : properties.keySet() )
+            {
+                Object value = properties.get(key);
+                propertiesAsMap.put((String) key, value);
+            }
+            propertiesAsMap.remove(DataCollectionConfigConstants.NAME_PROPERTY);
+            propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PATH_PROPERTY);
+            propertiesAsMap.remove(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY);
+
+        }
+        if( propertiesAsMap.isEmpty() )
+            return;
+        Map<String, Object> fileInfo = new LinkedHashMap<>();
+        fileInfo.put(DataCollectionConfigConstants.NAME_PROPERTY, de.getName());
+        if( !propertiesAsMap.isEmpty() )
+            fileInfo.put("properties", propertiesAsMap);
+        ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
+        Transformer t = ENV.getTransformerForDataElement(de);
+        if( t != null )
+            fileInfo.put("transformer", t.getClass().getName());
+        setFileInfo(fileInfo);
+    }
 
 	@Override
     protected void doRemove(String name) throws Exception
