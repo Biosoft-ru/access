@@ -48,7 +48,7 @@
   <dependency>
     <groupId>ru.biosoft.access</groupId>
     <artifactId>core</artifactId>
-    <version>[1.1.0,)</version>
+    <version>[1.1.1, 2.0.0)</version>
   </dependency>
 
   <dependency>
@@ -61,6 +61,12 @@
     <groupId>commons-io</groupId>
     <artifactId>commons-io</artifactId>
     <version>2.16.1</version>
+  </dependency>
+  
+  <dependency>
+    <groupId>ru.biosoft</groupId>
+    <artifactId>util</artifactId>
+    <version>[1.0.0, 2.0.0)</version>
   </dependency>
 
  </dependencies>
