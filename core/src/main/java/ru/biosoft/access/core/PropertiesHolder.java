@@ -7,4 +7,6 @@ public interface PropertiesHolder
     public Properties getProperties();
 
     public void setProperties(Properties props);
+
+    public Properties createProperties();
 }

@@ -21,6 +21,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.io.FileUtils;
 
+import com.developmentontheedge.beans.DynamicProperty;
+import com.developmentontheedge.beans.DynamicPropertySet;
+
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataCollectionConfigConstants;
@@ -563,5 +566,37 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
         YamlInfoProvider provider = new YamlInfoProvider(dir);
         properties.putAll(provider.getProperties());
         return new GenericFileDataCollection(parent, properties);
+    }
+
+    public Map<String, Object> getChildProperties(String name, String transformerClass)
+    {
+        if( transformerClass == null )
+            return null;
+        Transformer transformer = createTransformer(transformerClass);
+        if( transformer == null )
+            return null; //Element not supported for this collection
+
+        Map<String, Object> properties = new LinkedHashMap<>();
+        //Get empty properties fields from transformer
+        //@todo: should create by element or get from element? 
+        //@todo: properties should be DynamicProperties with editor etc, not only strings
+        if( transformer instanceof PropertiesHolder )
+        {
+            Properties p = ((PropertiesHolder) transformer).createProperties();
+            p.entrySet().forEach(e -> {
+                properties.put(e.getKey().toString(), e.getValue());
+            });
+        }
+        //Get properties from yaml file, overwrite empty ones created by transformer
+        Map<String, Object> fileInfo = infoProvider.getFileInfo(name);
+        if( fileInfo != null && fileInfo.containsKey("properties") )
+        {
+            Map fileInfoMap = (Map) fileInfo.get("properties");
+            for ( Object propertyName : fileInfoMap.keySet() )
+            {
+                properties.put(String.valueOf(propertyName), fileInfoMap.get(propertyName));
+            }
+        }
+        return properties;
     }
 }
