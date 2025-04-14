@@ -35,6 +35,8 @@ import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.PropertiesHolder;
 import ru.biosoft.access.core.Transformer;
+import ru.biosoft.exception.LoggedClassCastException;
+import ru.biosoft.exception.LoggedClassNotFoundException;
 
 
 public class GenericFileDataCollection extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection
@@ -504,8 +506,18 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     {
     	if(className == null)
     		return null;
-    	Class<? extends Transformer> clazz = Environment.loadClass(className, Transformer.class);
-		try {
+    	Class<? extends Transformer> clazz;
+        try
+        {
+            clazz = Environment.loadClass(className, Transformer.class);
+        }
+        catch (LoggedClassNotFoundException | LoggedClassCastException e)
+        {
+            return null;
+        }
+
+        try
+        {
             return clazz.getDeclaredConstructor().newInstance();
         }
         catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
