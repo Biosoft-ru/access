@@ -14,48 +14,17 @@ public class FileTypeRegistry {
 
 	protected static final Logger log = Logger.getLogger(FileTypeRegistry.class.getName());
 	
-	public static final FileType FILE_TYPE_TEXT = new FileType("text", new String[] { "", "txt" },
+    public static final FileType FILE_TYPE_TEXT = new FileType( "Text", new String[] { "", "txt" },
             "ru.biosoft.access.file.FileTextTransformer", FileTypePriority.LOW_PRIORITY, "Text file.");
 
-	public static final FileType FILE_TYPE_BINARY = new FileType("binary", new String[] { "" }, null,
+    public static final FileType FILE_TYPE_BINARY = new FileType( "Binary", new String[] { "" }, null,
             FileTypePriority.LOWEST_PRIORITY, "Binary file.");
 
     private static FileTypeRegistryImpl registry;
 
-    //	protected static Map<String, FileType> byName = new HashMap<>();
-    //	protected static Map<String, FileType> byExtension = new HashMap<>();
-    //
-    //    static
-    //    {
-    //        byName.put(FILE_TYPE_TEXT.getName(), FILE_TYPE_TEXT);
-    //        byName.put(FILE_TYPE_BINARY.getName(), FILE_TYPE_BINARY);
-    //    }
-
 	public static void register(FileType fileType) {
-
         checkRegistry();
         registry.register( fileType );
-
-        //		byName.put(fileType.name, fileType);
-        //		
-        //		for (String extension : fileType.getExtensions()) {
-        //			if (!byExtension.containsKey(extension))
-        //				byExtension.put(extension, fileType);
-        //			else {
-        //				FileType ft = byExtension.get(extension);
-        //
-        //                if( ft.getPriority().isHigher(fileType.getPriority()) )
-        //					continue;
-        //                else if( fileType.getPriority().isHigher(ft.getPriority()) )
-        //					byExtension.put(extension, fileType);
-        //
-        //				else // ft.getPriority() == fileType.getPriority()
-        //					log.warning("FileTypeRegistry: extension '" + extension + "'"
-        //							+ "corresponds to 2 file types with the same priority " + ft.getPriority()
-        //							+ System.lineSeparator() + "FileType (used):    " + ft + System.lineSeparator()
-        //							+ "FileType (skipped): " + fileType);
-        //			}
-        //		}
 	}
 
 	public static FileType getFileType(String name) {
@@ -136,6 +105,12 @@ public class FileTypeRegistry {
                 }
             }
         }
+    }
+
+    public static Stream<FileType> fileTypes()
+    {
+        checkRegistry();
+        return registry.fileTypes();
     }
 
 }

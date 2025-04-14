@@ -3,6 +3,7 @@ package ru.biosoft.access.file;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class FileTypeRegistryImpl
 {
@@ -54,5 +55,10 @@ public class FileTypeRegistryImpl
     public FileType getFileTypeByTransformer(String transformerClassName)
     {
         return byName.values().stream().filter( ft -> ft.getTransformerClassName().equals( transformerClassName ) ).findFirst().orElse( null );
+    }
+
+    public Stream<FileType> fileTypes()
+    {
+        return byName.values().stream();
     }
 }
