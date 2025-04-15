@@ -1,4 +1,4 @@
-package ru.biosoft.access.core;
+package ru.biosoft.access.file;
 
 public enum FileTypePriority
 {

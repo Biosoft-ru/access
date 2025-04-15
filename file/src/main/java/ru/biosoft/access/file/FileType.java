@@ -1,7 +1,5 @@
 package ru.biosoft.access.file;
 
-import ru.biosoft.access.core.FileTypePriority;
-
 /**
  * Describes file type and corresponding transformer.
  * 

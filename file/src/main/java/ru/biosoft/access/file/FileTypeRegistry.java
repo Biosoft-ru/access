@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import ru.biosoft.access.core.Environment;
-import ru.biosoft.access.core.FileTypePriority;
 
 public class FileTypeRegistry {
     /** Key for class in Environment properties. */
