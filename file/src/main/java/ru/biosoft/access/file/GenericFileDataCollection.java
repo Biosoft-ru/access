@@ -50,6 +50,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	//Sorted name list, folders first
 	private List<String> nameList;
 	
+    private WatchKey watchKey;
+    private FileSystemListener listener;
 	
 	//Constructor used by biouml framework
 	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
@@ -129,10 +131,10 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		return new File(rootFolder, name);
 	}
 	
-	private WatchKey watchKey;
+
 	private void watchFolder() throws IOException {
-		watchKey = FileSystemWatcher.INSTANCE.watchFolder(rootFolder, new FileSystemListener() {
-			
+        listener = new FileSystemListener()
+        {
 			@Override
 			public void added(Path path)throws Exception {
 				File file = path.toFile();
@@ -165,7 +167,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			public void overflow(Path dir) throws Exception {
 				reInit();
 			}
-		});
+        };
+        watchKey = FileSystemWatcher.INSTANCE.watchFolder( rootFolder, listener );
 	}
 	
 	//called when file was added or modified
@@ -282,6 +285,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
             Properties properties = null;
             if( dataElement instanceof PropertiesHolder )
                 properties = ((PropertiesHolder) dataElement).getProperties();
+            else if(dataElement instanceof DataCollection)
+                properties = ((DataCollection) dataElement).getInfo().getProperties();
             storeElementProperties(fde, t.getClass(), properties);
 			file = fde.getFile();
 		}
@@ -307,9 +312,10 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			propertiesAsMap.remove(DataCollectionConfigConstants.NAME_PROPERTY);
 			propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PATH_PROPERTY);
 			propertiesAsMap.remove(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY);
+            propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PROPERTY);
 
 		}
-		if(propertiesAsMap.isEmpty() && transformerClass == null)
+        if( propertiesAsMap.isEmpty() )
 			return;
 		Map<String, Object> fileInfo = new LinkedHashMap<>();
 		fileInfo.put(DataCollectionConfigConstants.NAME_PROPERTY, de.getName());
@@ -319,34 +325,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			fileInfo.put("transformer", transformerClass.getName());
 		setFileInfo(fileInfo);
 	}
-
-    public void storeElementProperties1(DataElement de, Properties properties) throws Exception
-    {
-        Map<String, Object> propertiesAsMap = new LinkedHashMap<>();
-        if( properties != null )
-        {
-            for ( Object key : properties.keySet() )
-            {
-                Object value = properties.get(key);
-                propertiesAsMap.put((String) key, value);
-            }
-            propertiesAsMap.remove(DataCollectionConfigConstants.NAME_PROPERTY);
-            propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PATH_PROPERTY);
-            propertiesAsMap.remove(DataCollectionConfigConstants.CONFIG_PATH_PROPERTY);
-
-        }
-        if( propertiesAsMap.isEmpty() )
-            return;
-        Map<String, Object> fileInfo = new LinkedHashMap<>();
-        fileInfo.put(DataCollectionConfigConstants.NAME_PROPERTY, de.getName());
-        if( !propertiesAsMap.isEmpty() )
-            fileInfo.put("properties", propertiesAsMap);
-        ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
-        Transformer t = ENV.getTransformerForDataElement(de);
-        if( t != null )
-            fileInfo.put("transformer", t.getClass().getName());
-        setFileInfo(fileInfo);
-    }
 
 	@Override
     protected void doRemove(String name) throws Exception
@@ -531,7 +509,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     public void close() throws Exception {
     	super.close();
     	infoProvider.close();
-    	FileSystemWatcher.INSTANCE.stopWatching(watchKey);
+        FileSystemWatcher.INSTANCE.stopWatching( watchKey, listener );
     }
     
     @Override

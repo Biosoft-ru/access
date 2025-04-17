@@ -32,6 +32,8 @@ public class YamlInfoProvider extends MemoryInfoProvider
 	
 	private File rootFolder;
 	private File yamlFile;//optional yml file
+    private WatchKey watchKey;
+    private FileSystemListener listener;
 	
 	public YamlInfoProvider(File rootFolder) throws IOException
 	{
@@ -68,7 +70,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
     
     @Override
     public void close() throws Exception {
-    	FileSystemWatcher.INSTANCE.stopWatching(watchKey);
+        FileSystemWatcher.INSTANCE.stopWatching( watchKey, listener );
     }
     
 	public static boolean isBioUMLYAML(File file)
@@ -76,9 +78,9 @@ public class YamlInfoProvider extends MemoryInfoProvider
 		return file.getName().equals(YAML_FILE); 
 	}
 
-	private WatchKey watchKey;
 	private void watchFolder() throws IOException {
-		watchKey = FileSystemWatcher.INSTANCE.watchFolder(rootFolder, new FileSystemListener() {
+        listener = new FileSystemListener()
+        {
 			
 			@Override
 			public void added(Path path)throws Exception {
@@ -119,7 +121,8 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				reInitYaml();
 				fireInfoChanged();
 			}
-		});
+        };
+        watchKey = FileSystemWatcher.INSTANCE.watchFolder( rootFolder, listener );
 	}
 	
 	private synchronized void reInitYaml() throws IOException 
