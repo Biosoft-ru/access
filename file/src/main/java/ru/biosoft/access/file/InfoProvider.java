@@ -26,6 +26,8 @@ public interface InfoProvider
      */
     public List<String> getDataCollections();
     
+    public List<String> getFileFilter();
+
     public void addListener(InfoProviderListener l);
     
     void close() throws Exception;

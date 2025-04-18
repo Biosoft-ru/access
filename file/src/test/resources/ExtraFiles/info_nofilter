@@ -5,6 +5,3 @@ files:
     type: Binary 
 properties:
   root: 'true'
-fileFilter:
-    - '/bin'
-    - '*.log'

@@ -3,5 +3,8 @@ files:
   type: Binary
 - name: file1.txt
   type: Text
-properties: {}
-collections: []
+properties:
+  root: 'true'
+fileFilter:
+- /bin
+- '*.log'

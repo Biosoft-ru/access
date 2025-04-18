@@ -3,11 +3,8 @@ package ru.biosoft.access.file;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.Collections;
@@ -20,9 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.io.FileUtils;
-
-import com.developmentontheedge.beans.DynamicProperty;
-import com.developmentontheedge.beans.DynamicPropertySet;
 
 import ru.biosoft.access.core.AbstractDataCollection;
 import ru.biosoft.access.core.DataCollection;
@@ -52,6 +46,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	
     private WatchKey watchKey;
     private FileSystemListener listener;
+
+    private FilePatternFilter filter;
 	
 	//Constructor used by biouml framework
 	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
@@ -68,7 +64,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	}
 	
 	private void createInfoProvider(Properties properties) throws IOException {
-		// TODO Auto-generated method stub
 		String infoProviderStr = properties.getProperty("infoProvider", "yaml");
 		switch(infoProviderStr)
 		{
@@ -89,13 +84,12 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 
 	public synchronized void reInit() throws IOException
 	{
+        filter = new FilePatternFilter( rootFolder, infoProvider.getFileFilter() );
 		v_cache.clear();
 		descriptors.clear();
 		nameList = new CopyOnWriteArrayList<String>();
 		initFromFiles();
 	}
-	
-	
 
 	private synchronized void initFromFiles() {
 		for(File file : rootFolder.listFiles())
@@ -109,8 +103,6 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		sortNameList(nameList);
 	}
 	
-
-	
 	@Override
 	public boolean isFileAccepted(File file)
 	{
@@ -119,11 +111,11 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		boolean recursive = (Boolean) infoProvider.getProperties().getOrDefault("recursie", true);
 		if(recursive && file.isDirectory())
 			return true;
-		String fileFilter = (String)infoProvider.getProperties().get("fileFilter");;
-		if(fileFilter == null)
-			return true;
-		PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher( "glob:" + fileFilter );
-		return pathMatcher.matches(Paths.get(file.getName()));
+        if( filter.isExcluded( file ) )
+		    return false;
+        return true;
+//		PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher( "glob:" + fileFilter );
+//		return pathMatcher.matches(Paths.get(file.getName()));
 	}
 	
 	@Override

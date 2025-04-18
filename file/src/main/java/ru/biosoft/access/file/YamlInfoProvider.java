@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+
 /**
  * Implements InfoProvider that stores all information in memory.
  */
@@ -156,7 +157,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				Map<String, String> props = (Map<String, String>) propsObj;
                 for ( String propName : props.keySet() )
                 {
-                    properties.setProperty(propName, String.valueOf(props.get(propName)));
+                    properties.setProperty( propName, String.valueOf( props.get( propName ) ) );
                 }
                 //properties.putAll(props);
 			}
@@ -168,6 +169,13 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				collections.addAll((List<String>) collectionsObj);
 			}
 			
+            fileFilter.clear();
+            Object fileFilterObj = yaml.get( "fileFilter" );
+            if( fileFilterObj instanceof List )
+            {
+                fileFilter.addAll( (List<String>) fileFilterObj );
+            }
+
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Can not init from " + YAML_FILE + ", file will be ignored", e);
 			fileInfoByName.clear();
@@ -176,16 +184,18 @@ public class YamlInfoProvider extends MemoryInfoProvider
 		}
 	}
 
-
 	private synchronized void writeYaml() throws IOException {
 		//recreate yaml object from fileInfoByName, properties and collections
 		Map<String, Object> yaml = new LinkedHashMap<>();
 		List<Map<String, Object>> files = new ArrayList<>();
 		files.addAll(fileInfoByName.values());
 		yaml.put("files", files);
+        if( !properties.isEmpty() )
 		yaml.put("properties", properties);
-		yaml.put("collections", collections);
-		
+        if( !collections.isEmpty() )
+            yaml.put( "collections", collections );
+        if( !fileFilter.isEmpty() )
+            yaml.put( "fileFilter", fileFilter );
 		
 		//write to .info.tmp
 		DumperOptions options = new DumperOptions();

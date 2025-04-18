@@ -17,6 +17,8 @@ public class MemoryInfoProvider implements InfoProvider
 	
 	protected List<String> collections = new ArrayList<>();
 	
+    protected List<String> fileFilter = new ArrayList<>();
+
     public Properties getProperties()
     {
         return properties;
@@ -57,5 +59,10 @@ public class MemoryInfoProvider implements InfoProvider
 		
 	}
 
+    @Override
+    public List<String> getFileFilter()
+    {
+        return fileFilter;
+    }
 
 }
