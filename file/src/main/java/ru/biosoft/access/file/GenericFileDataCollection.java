@@ -110,7 +110,10 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			return false;
 		boolean recursive = (Boolean) infoProvider.getProperties().getOrDefault("recursie", true);
 		if(recursive && file.isDirectory())
-			return true;
+            if( filter.isExcluded( file ) )
+                return false;
+            else
+                return true;
         if( filter.isExcluded( file ) )
 		    return false;
         return true;
