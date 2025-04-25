@@ -119,7 +119,7 @@ public class TestGenericFileDataCollection
 
         Path pathInStorageT = Paths.get( "src/test/resources/ExtraFiles/info_nofilter" );
         Path pathInDC = Paths.get( "src/test/resources/GenericFDC/.info" );
-        Files.move( pathInStorageT, pathInDC, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE );
+        Files.copy( pathInStorageT, pathInDC, StandardCopyOption.REPLACE_EXISTING );
         dc = getCollection();
         assertEquals( "Wrong number of elements", 4, dc.getSize() );
         assertNotNull( "Element missed", dc.get( filterElement ) );
