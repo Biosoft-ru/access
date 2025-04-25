@@ -59,6 +59,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
 	@Override
 	public synchronized void setFileInfo(Map<String, Object> fileInfo) throws Exception {
         ChangedInfo changed = new ChangedInfo();
+        changed.allchanged = false;
         changed.modified.add( (String) fileInfo.get( "name" ) );
 		super.setFileInfo(fileInfo);
 		writeYaml();
@@ -90,8 +91,11 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				File file = path.toFile();
 				if(isBioUMLYAML(file))
 				{
-					reInitYaml();
-					fireInfoChanged();
+                    ChangedInfo changed = reInitYaml();
+                    if( changed.allChanged() )
+                        fireInfoChanged();
+                    else if( changed.elementsChanged() )
+                        fireInfoChanged( changed );
 					return;
 				}
 			}
@@ -102,8 +106,11 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				File file = path.toFile();
 				if(isBioUMLYAML(file))
 				{
-					reInitYaml();
-					fireInfoChanged();
+                    ChangedInfo changed = reInitYaml();
+                    if( changed.allChanged() )
+                        fireInfoChanged();
+                    else if( changed.elementsChanged() )
+                        fireInfoChanged( changed );
 					return;
 				}
 			}
@@ -261,9 +268,9 @@ public class YamlInfoProvider extends MemoryInfoProvider
 		Writer writer = new BufferedWriter(new FileWriter(tmp));
 		parser.dump(yaml, writer);
 		writer.close();
-		
 		//rename .info.tmp into .info atomically
 		Files.move(tmp.toPath(), yamlFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+
 	}
 
 }
