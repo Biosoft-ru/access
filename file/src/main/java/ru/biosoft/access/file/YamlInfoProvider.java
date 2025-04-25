@@ -29,7 +29,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
 	private static final Logger log = Logger.getLogger(YamlInfoProvider.class.getName());
 	
 	public static final String YAML_FILE = ".info";
-	public static final String YANL_TMP_FILE = ".info.tmp";
+	public static final String YAML_TMP_FILE = ".info.tmp";
 	
 	private File rootFolder;
 	private File yamlFile;//optional yml file
@@ -58,9 +58,11 @@ public class YamlInfoProvider extends MemoryInfoProvider
 	
 	@Override
 	public synchronized void setFileInfo(Map<String, Object> fileInfo) throws Exception {
+        ChangedInfo changed = new ChangedInfo();
+        changed.modified.add( (String) fileInfo.get( "name" ) );
 		super.setFileInfo(fileInfo);
 		writeYaml();
-		fireInfoChanged();
+        fireInfoChanged( changed );
 	}
 
 	@Override
@@ -82,7 +84,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
 	private void watchFolder() throws IOException {
         listener = new FileSystemListener()
         {
-			
+
 			@Override
 			public void added(Path path)throws Exception {
 				File file = path.toFile();
@@ -111,8 +113,11 @@ public class YamlInfoProvider extends MemoryInfoProvider
 				File file = path.toFile();
 				if(isBioUMLYAML(file))//TODO: detect what elements were changed and update only them
 				{
-					reInitYaml();
-					fireInfoChanged();
+                    ChangedInfo changed = reInitYaml();
+                    if( changed.allChanged() )
+                        fireInfoChanged();
+                    else if( changed.elementsChanged() )
+                        fireInfoChanged( changed );
 					return;
 				}
 			}
@@ -126,63 +131,112 @@ public class YamlInfoProvider extends MemoryInfoProvider
         watchKey = FileSystemWatcher.INSTANCE.watchFolder( rootFolder, listener );
 	}
 	
-	private synchronized void reInitYaml() throws IOException 
+    private synchronized ChangedInfo reInitYaml() throws IOException
 	{
-		fileInfoByName.clear();
-		properties.clear();
-		collections.clear();
+        if( !yamlFile.exists() )
+        {
+            fileInfoByName.clear();
+            properties.clear();
+            collections.clear();
+            fileFilter.clear();
+            return new ChangedInfo();
+        }
+
+        Map<String, Map<String, Object>> newFileInfoByName = new LinkedHashMap<String, Map<String, Object>>();
+        Properties newProperties = new Properties();
+        List<String> newCollections = new ArrayList<>();
+        List<String> newFileFilter = new ArrayList<>();
 		
 		try {
-			if (!yamlFile.exists())
-				return;
 			YamlParser parser = new YamlParser();
 			byte[] bytes = Files.readAllBytes(yamlFile.toPath());
 			String text = new String(bytes);
 			Map<String, Object> yaml = parser.parseYaml(text);
 			
-			fileInfoByName.clear();
+            //fileInfoByName.clear();
 			Object filesObj = yaml.get("files");
 			if (filesObj != null) {
 				List<Map<String, Object>> files = (List<Map<String, Object>>) filesObj;
 				for (Map<String, Object> fileInfo : files) {
 					String name = (String) fileInfo.get("name");
-					fileInfoByName.put(name, fileInfo);
+                    newFileInfoByName.put( name, fileInfo );
 				}
 			}
 
 			// Properties of this collection
-			properties.clear();
+            //properties.clear();
 			Object propsObj = yaml.get("properties");
 			if (propsObj instanceof Map) {
 				Map<String, String> props = (Map<String, String>) propsObj;
                 for ( String propName : props.keySet() )
                 {
-                    properties.setProperty( propName, String.valueOf( props.get( propName ) ) );
+                    newProperties.setProperty( propName, String.valueOf( props.get( propName ) ) );
                 }
                 //properties.putAll(props);
 			}
 			
-			collections.clear();
+            //collections.clear();
 			Object collectionsObj = yaml.get("collections");
 			if(collectionsObj instanceof List)
 			{
-				collections.addAll((List<String>) collectionsObj);
+                newCollections.addAll( (List<String>) collectionsObj );
 			}
 			
-            fileFilter.clear();
+            //fileFilter.clear();
             Object fileFilterObj = yaml.get( "fileFilter" );
             if( fileFilterObj instanceof List )
             {
-                fileFilter.addAll( (List<String>) fileFilterObj );
+                newFileFilter.addAll( (List<String>) fileFilterObj );
             }
+
+            //Compare old and new YAML items and reinit only if changed
+            //reinit all if properties, collections or fileFilter changed
+            //reinit only changed elements if any
+            if( collections.equals( newCollections ) && fileFilter.equals( newFileFilter ) )
+            {
+                if( properties.keySet().stream().allMatch( p -> newProperties.containsKey( p ) && properties.get( p ).equals( newProperties.get( p ) ) )
+                        && properties.keySet().containsAll( newProperties.keySet() ) )
+                {
+                    ChangedInfo ch = getChangedElements( fileInfoByName, newFileInfoByName );
+                    fileInfoByName = newFileInfoByName;
+                    return ch;
+                }
+            }
+            fileInfoByName = newFileInfoByName;
+            properties = newProperties;
+            collections = newCollections;
+            fileFilter = newFileFilter;
+            return new ChangedInfo();
 
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Can not init from " + YAML_FILE + ", file will be ignored", e);
 			fileInfoByName.clear();
 			properties.clear();
 			collections.clear();
+            return new ChangedInfo();
 		}
 	}
+
+    private ChangedInfo getChangedElements(Map<String, Map<String, Object>> oldinfo, Map<String, Map<String, Object>> newinfo)
+    {
+        ChangedInfo changed = new ChangedInfo();
+        if( oldinfo.isEmpty() && newinfo.isEmpty() )
+            return changed;
+        for ( String old : oldinfo.keySet() )
+        {
+            if( !newinfo.containsKey( old ) )
+                changed.deleted.add( old );
+            else if( !oldinfo.get( old ).equals( newinfo.get( old ) ) )
+                changed.modified.add( old );
+        }
+        for ( String newel : newinfo.keySet() )
+        {
+            if( !oldinfo.containsKey( newel ) )
+                changed.added.add( newel );
+        }
+        changed.allchanged = false;
+        return changed;
+    }
 
 	private synchronized void writeYaml() throws IOException {
 		//recreate yaml object from fileInfoByName, properties and collections
@@ -203,7 +257,7 @@ public class YamlInfoProvider extends MemoryInfoProvider
 		options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
 		Yaml parser = new Yaml(options);
 		
-		File tmp = new File(rootFolder, YANL_TMP_FILE);
+		File tmp = new File(rootFolder, YAML_TMP_FILE);
 		Writer writer = new BufferedWriter(new FileWriter(tmp));
 		parser.dump(yaml, writer);
 		writer.close();

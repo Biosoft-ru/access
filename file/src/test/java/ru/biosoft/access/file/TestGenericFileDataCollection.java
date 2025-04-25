@@ -104,6 +104,7 @@ public class TestGenericFileDataCollection
         assertEquals( "Element file1.txt is not Text after changing file type", TextDataElement.class.getName(), de.getClass().getName() );
         Thread.sleep( 1000 );
         assertTrue( ".info file not changed after element type changed", FileUtils.contentEquals( fileInStorage, fileInDC ) );
+        dc.close();
     }
 
     //File filter *.log is in original collection, element test.log should be null. After .info without filter is used, element test.log should exist in collection.
@@ -118,7 +119,7 @@ public class TestGenericFileDataCollection
 
         Path pathInStorageT = Paths.get( "src/test/resources/ExtraFiles/info_nofilter" );
         Path pathInDC = Paths.get( "src/test/resources/GenericFDC/.info" );
-        Files.copy( pathInStorageT, pathInDC, StandardCopyOption.REPLACE_EXISTING );
+        Files.move( pathInStorageT, pathInDC, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE );
         dc = getCollection();
         assertEquals( "Wrong number of elements", 4, dc.getSize() );
         assertNotNull( "Element missed", dc.get( filterElement ) );

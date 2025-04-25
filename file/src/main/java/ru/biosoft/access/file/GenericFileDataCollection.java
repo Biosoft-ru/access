@@ -9,10 +9,12 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.WatchKey;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -29,6 +31,7 @@ import ru.biosoft.access.core.Environment;
 import ru.biosoft.access.core.FolderCollection;
 import ru.biosoft.access.core.PropertiesHolder;
 import ru.biosoft.access.core.Transformer;
+import ru.biosoft.access.file.MemoryInfoProvider.ChangedInfo;
 import ru.biosoft.exception.LoggedClassCastException;
 import ru.biosoft.exception.LoggedClassNotFoundException;
 
@@ -79,6 +82,16 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 			public void infoChanged() throws Exception {
 				reInit();
 			}
+
+            @Override
+            public void infoChanged(Object changed) throws Exception
+            {
+                if( changed instanceof ChangedInfo )
+                    reInitChanged( (ChangedInfo) changed );
+                else
+                    reInit();
+
+            }
 		});
 	}
 
@@ -90,6 +103,28 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		nameList = new CopyOnWriteArrayList<String>();
 		initFromFiles();
 	}
+
+    public synchronized void reInitChanged(ChangedInfo changed) throws IOException
+    {
+        Set<String> toReinit = new HashSet<>( changed.added );
+        for ( String deleted : changed.deleted )
+        {
+            v_cache.remove( deleted );
+            descriptors.remove( deleted );
+            nameList.remove( deleted );
+        }
+        for ( String modified : changed.modified )
+        {
+            v_cache.remove( modified );
+            descriptors.remove( modified );
+            nameList.remove( modified );
+            toReinit.add( modified );
+        }
+        if( toReinit.isEmpty() )
+            return;
+        nameList = new CopyOnWriteArrayList<String>();
+        initFromFilesChanged( toReinit );
+    }
 
 	private synchronized void initFromFiles() {
 		for(File file : rootFolder.listFiles())
@@ -103,6 +138,21 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		sortNameList(nameList);
 	}
 	
+    private synchronized void initFromFilesChanged(Set<String> changed)
+    {
+        for ( File file : rootFolder.listFiles() )
+        {
+            if( !changed.contains( file.getName() ) )
+                continue;
+            if( !isFileAccepted( file ) )
+                continue;
+            DataElementDescriptor descriptor = createDescriptor( file );
+            descriptors.put( file.getName(), descriptor );
+        }
+        nameList = new CopyOnWriteArrayList<>( descriptors.keySet() );
+        sortNameList( nameList );
+    }
+
 	@Override
 	public boolean isFileAccepted(File file)
 	{
