@@ -21,6 +21,12 @@ public class FileTypeRegistry {
 
     private static FileTypeRegistryImpl registry;
 
+    static
+    {
+        register( FILE_TYPE_TEXT );
+        register( FILE_TYPE_BINARY );
+    }
+
 	public static void register(FileType fileType) {
         checkRegistry();
         registry.register( fileType );

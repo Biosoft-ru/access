@@ -12,12 +12,6 @@ public class FileTypeRegistryImpl
     protected static Map<String, FileType> byName = new HashMap<>();
     protected static Map<String, FileType> byExtension = new HashMap<>();
 
-    static
-    {
-        byName.put( FileTypeRegistry.FILE_TYPE_TEXT.getName(), FileTypeRegistry.FILE_TYPE_TEXT );
-        byName.put( FileTypeRegistry.FILE_TYPE_BINARY.getName(), FileTypeRegistry.FILE_TYPE_BINARY );
-    }
-
     public void register(FileType fileType)
     {
         byName.put( fileType.name, fileType );
