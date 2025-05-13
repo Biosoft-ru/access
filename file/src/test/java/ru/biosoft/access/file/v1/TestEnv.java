@@ -1,6 +1,8 @@
 package ru.biosoft.access.file.v1;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataElement;
@@ -65,4 +67,10 @@ public class TestEnv extends Environment{
 		}
 		
 	}
+
+    @Override
+    public List<Class<? extends Transformer>> getTransformerForClass(Class<? extends DataElement> inputClass, Class<? extends DataElement> outputClass, boolean strict)
+    {
+        return Collections.emptyList();
+    }
 }

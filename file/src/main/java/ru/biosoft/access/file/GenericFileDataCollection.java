@@ -367,7 +367,12 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 		if(!propertiesAsMap.isEmpty())
 			fileInfo.put("properties", propertiesAsMap);
 		if(transformerClass != null)
+        {
 			fileInfo.put("transformer", transformerClass.getName());
+            FileType type = FileTypeRegistry.getFileTypeByTransformer( transformerClass.getName() );
+            if( type != null )
+                fileInfo.put( "type", type.getName() );
+        }
 		setFileInfo(fileInfo);
 	}
 
@@ -417,8 +422,17 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     
     @Override
     public boolean isAcceptable(Class<? extends DataElement> clazz) {
-    	return FileDataElement.class.equals(clazz)
-    			|| clazz.isAssignableFrom(FolderCollection.class);
+        return isAcceptable( clazz, true );
+    }
+
+    public boolean isAcceptable(Class<? extends DataElement> clazz, boolean strict)
+    {
+        if( FileDataElement.class.equals( clazz ) || clazz.isAssignableFrom( FolderCollection.class ) )
+            return true;
+
+        ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
+        List<Class<? extends Transformer>> tClasses = ENV.getTransformerForClass( FileDataElement.class, clazz, strict );
+        return !(tClasses.isEmpty());
     }
     
     private DataElementDescriptor createDescriptor(File file) {
