@@ -2,6 +2,9 @@ package ru.biosoft.access.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Logger;
 
 import ru.biosoft.access.core.AbstractTransformer;
@@ -49,15 +52,11 @@ public abstract class AbstractFileTransformer<O extends DataElement> extends Abs
         return element;
     }
 
-    /**
-     * @todo
-     */
     @Override
     public FileDataElement transformOutput(O output) throws Exception
     {
-        return null;
-/*      
-        File dir = TempFiles.dir("transform");
+
+        File dir = Files.createTempDirectory( "transform" ).toFile();
         try
         {
             File file = new File(dir, output.getName());
@@ -65,13 +64,50 @@ public abstract class AbstractFileTransformer<O extends DataElement> extends Abs
             if(!file.exists())
                 throw new FileNotFoundException(file.toString());
             FileDataElement fde = new FileDataElement(output.getName(), getPrimaryCollection().cast( FileBasedCollection.class ));
-            ApplicationUtils.linkOrCopyFile(fde.getFile(), file, null);
+            File result = fde.getFile();
+            if( !result.equals( file ) )
+            {
+                try
+                {
+                    if( !result.getAbsolutePath().equals( file.getAbsolutePath() ) )
+                    {
+                        try
+                        {
+                            result.delete();
+                            Files.createLink( result.toPath(), file.toPath() );
+                        }
+                        catch (Throwable e)
+                        {
+                            Files.copy( file.toPath(), result.toPath(), StandardCopyOption.REPLACE_EXISTING );
+                        }
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException( "Cannot copy file " + file + " to " + result, e );
+                }
+            }
+
             return fde;
         }
         finally
         {
-            ApplicationUtils.removeDir(dir);
+            File[] files = dir.listFiles();
+            if( files != null )
+            {
+                for ( File file : files )
+                {
+                    if( !file.delete() )
+                    {
+                        file.deleteOnExit();
+                    }
+                }
+            }
+            if( !dir.delete() )
+            {
+                dir.deleteOnExit();
+            }
         }
-*/        
+
     }
 }
