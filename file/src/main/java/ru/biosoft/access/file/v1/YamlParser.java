@@ -1,4 +1,4 @@
-package ru.biosoft.access.file;
+package ru.biosoft.access.file.v1;
 
 import java.util.Map;
 
@@ -16,6 +16,8 @@ public class YamlParser
             throw new IllegalArgumentException("Yaml should be a map of key-values, but get " + root);
 
         Map<?, ?> rootMap = (Map<?, ?>)root;
+        YamlValidator validator = new YamlValidator();
+        validator.validate( rootMap );
         return (Map<String, Object>)rootMap;
     }
 }

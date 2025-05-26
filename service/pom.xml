@@ -3,12 +3,12 @@
  <modelVersion>4.0.0</modelVersion>
 
  <groupId>ru.biosoft.access</groupId>
- <artifactId>core</artifactId>
- <version>2.0.0</version>
+ <artifactId>file</artifactId>
+ <version>2.0.0-SNAPSHOT</version>
  <packaging>jar</packaging>
 
- <name>Data access core</name>
- <description>Core classes for access to heterogenous biological data.</description>
+ <name>File repository</name>
+ <description>Core classes for FileDataCollection and repository.</description>
   <url>https://github.com/Biosoft-ru/access</url>
 
     <licenses>
@@ -32,41 +32,29 @@
   </scm>
 
  <parent>
-  <groupId>ru.biosoft</groupId>
+  <groupId>ru.biosoft.access</groupId>
   <artifactId>access</artifactId>
-  <version>2.0.0</version>
+  <version>1.1.1</version>
  </parent>
 
  <dependencies>
 
   <dependency>
-    <groupId>ru.biosoft</groupId>
-    <artifactId>exception</artifactId>
-    <version>[1.0.0,)</version>
+    <groupId>ru.biosoft.access</groupId>
+    <artifactId>core</artifactId>
+    <version>[1.1.0,)</version>
   </dependency>
 
   <dependency>
-    <groupId>ru.biosoft</groupId>
-    <artifactId>util</artifactId>
-    <version>[2.0.0,)</version>
+    <groupId>org.yaml</groupId>
+    <artifactId>snakeyaml</artifactId>
+    <version>1.30</version>
   </dependency>
-
+  
   <dependency>
-    <groupId>ru.biosoft</groupId>
-    <artifactId>jobcontrol</artifactId>
-    <version>[1.0.0,)</version>
-  </dependency>
-
-  <dependency>
-    <groupId>com.google.code.findbugs</groupId>
-    <artifactId>jsr305</artifactId>
-    <version>3.0.2</version>
-  </dependency>
-
-  <dependency>
-   <groupId>com.developmentontheedge</groupId>
-   <artifactId>beans</artifactId>
-   <version>[3.0.4,)</version>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.16.1</version>
   </dependency>
 
  </dependencies>
@@ -83,17 +71,6 @@
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-javadoc-plugin</artifactId>
-    <executions>
-     <execution>
-      <id>attach-javadocs</id>
-      <goals>
-       <goal>jar</goal>
-      </goals>
-      <configuration>
-        <doclint>none</doclint>      
-      </configuration>
-     </execution>
-    </executions>
    </plugin>
    
    <plugin>

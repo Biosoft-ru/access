@@ -6,8 +6,7 @@ import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataElement;
 
 /**
- * Collection where each internal element is represented as file 
- * @author lan
+ * Collection where internal elements generally are represented as file.
  */
 public interface FileBasedCollection<T extends DataElement> extends DataCollection<T>
 {

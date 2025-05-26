@@ -1,0 +1,10 @@
+files:
+- name: file3
+  type: Binary
+- name: file1.txt
+  type: Text
+properties:
+  root: 'true'
+fileFilter:
+- /bin
+- '*.log'

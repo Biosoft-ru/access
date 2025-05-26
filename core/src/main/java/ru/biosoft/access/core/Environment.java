@@ -1,5 +1,6 @@
 package ru.biosoft.access.core;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -12,7 +13,17 @@ import ru.biosoft.util.IconUtils;
 
 public class Environment 
 {
-	////////////////////////////////////////////////////////////////////////////
+    private static Map<String, Object>  properties = new HashMap<>();
+    public static Object getValue(String name)
+    {
+        return properties.get(name);
+    }
+    public static void setValue(String name, Object value)
+    {
+        properties.put(name, value);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
 	// Classes and resources loading
 	//
 	
