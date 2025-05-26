@@ -2,4 +2,9 @@ files:
   - name: file3
     type: Binary
   - name: file1.txt
-    type: Binary
+    type: Binary 
+properties:
+  root: 'true'
+fileFilter:
+    - '/bin'
+    - '*.log'
