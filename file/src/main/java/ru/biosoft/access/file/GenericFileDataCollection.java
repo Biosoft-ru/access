@@ -21,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.commons.io.FileUtils;
 
 import ru.biosoft.access.core.AbstractDataCollection;
+import ru.biosoft.access.core.CollectionFactory;
 import ru.biosoft.access.core.DataCollection;
 import ru.biosoft.access.core.DataCollectionConfigConstants;
 import ru.biosoft.access.core.DataCollectionInfo;
@@ -39,7 +40,7 @@ import ru.biosoft.exception.LoggedClassNotFoundException;
 public class GenericFileDataCollection extends AbstractDataCollection<DataElement> implements FileBasedCollection<DataElement>, FolderCollection
 {
 	protected File rootFolder;
-	private InfoProvider infoProvider;
+    protected InfoProvider infoProvider;
 
 	//Layer of descriptors, corresponding DataElements will be created in lazy way
 	private Map<String, DataElementDescriptor> descriptors = new ConcurrentHashMap<>();
@@ -360,8 +361,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
             propertiesAsMap.remove(DataCollectionConfigConstants.FILE_PROPERTY);
 
 		}
-        if( propertiesAsMap.isEmpty() )
-			return;
+        //        if( propertiesAsMap.isEmpty() )
+        //			return;
 		Map<String, Object> fileInfo = new LinkedHashMap<>();
 		fileInfo.put(DataCollectionConfigConstants.NAME_PROPERTY, de.getName());
 		if(!propertiesAsMap.isEmpty())
@@ -607,14 +608,22 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 
     public static DataCollection<?> initGenericFileDataCollection(DataCollection parent, File dir) throws Exception
     {
-        Properties properties = new Properties();
-        properties.put(DataCollectionConfigConstants.CLASS_PROPERTY, GenericFileDataCollection.class.getName());
-        properties.put(DataCollectionConfigConstants.NAME_PROPERTY, dir.getName());
-        properties.put(DataCollectionConfigConstants.FILE_PATH_PROPERTY, dir.getPath());
-        //Read all properties from yaml file so they could be used in super constructor 
-        YamlInfoProvider provider = new YamlInfoProvider(dir);
-        properties.putAll(provider.getProperties());
-        return new GenericFileDataCollection(parent, properties);
+        return initGenericFileDataCollection( parent, dir, null );
+    }
+
+    public static DataCollection<?> initGenericFileDataCollection(DataCollection parent, File dir, Properties properties) throws Exception
+    {
+        Properties collectionProperties = properties == null ? new Properties() : (Properties) properties.clone();
+        //Read all properties from yaml file so they could be used in super constructor
+        YamlInfoProvider provider = new YamlInfoProvider( dir );
+        collectionProperties.putAll( provider.getProperties() );
+        provider.setProperties( collectionProperties );
+
+        collectionProperties.putIfAbsent( DataCollectionConfigConstants.CLASS_PROPERTY, GenericFileDataCollection.class.getName() );
+        collectionProperties.putIfAbsent( DataCollectionConfigConstants.NAME_PROPERTY, dir.getName() );
+        collectionProperties.putIfAbsent( DataCollectionConfigConstants.FILE_PATH_PROPERTY, dir.getPath() );
+
+        return CollectionFactory.createCollection( parent, collectionProperties );
     }
 
     public Map<String, Object> getChildProperties(String name, String transformerClass)

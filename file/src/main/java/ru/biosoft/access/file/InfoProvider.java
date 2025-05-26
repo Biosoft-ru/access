@@ -12,6 +12,8 @@ public interface InfoProvider
      */
     public Properties getProperties();
 
+    public void setProperties(Properties properties) throws Exception;
+
     /**
      * Returns properties for the specified file name.
      */
@@ -27,6 +29,8 @@ public interface InfoProvider
     public List<String> getDataCollections();
     
     public List<String> getFileFilter();
+
+    public void setFileFilter(List<String> filter) throws Exception;
 
     public void addListener(InfoProviderListener l);
     

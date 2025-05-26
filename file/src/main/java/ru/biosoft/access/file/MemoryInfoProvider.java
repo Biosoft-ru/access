@@ -26,6 +26,11 @@ public class MemoryInfoProvider implements InfoProvider
         return properties;
     }
 
+    public void setProperties(Properties properties) throws Exception
+    {
+        this.properties = properties;
+    }
+
     public Map<String, Object> getFileInfo(String fileName)
     {
         return fileInfoByName.get(fileName);
@@ -71,6 +76,12 @@ public class MemoryInfoProvider implements InfoProvider
     public List<String> getFileFilter()
     {
         return fileFilter;
+    }
+
+    @Override
+    public void setFileFilter(List<String> filter) throws Exception
+    {
+        fileFilter = filter;
     }
 
     public static class ChangedInfo

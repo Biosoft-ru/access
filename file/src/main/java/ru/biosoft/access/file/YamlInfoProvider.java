@@ -50,6 +50,17 @@ public class YamlInfoProvider extends MemoryInfoProvider
         return super.getProperties();
     }
 
+    @Override
+    public void setProperties(Properties newProperties) throws Exception
+    {
+        if( properties.equals( newProperties ) )
+            return;
+        super.setProperties( newProperties );
+        writeYaml();
+        fireInfoChanged();
+
+    }
+
 	@Override
     public synchronized Map<String, Object> getFileInfo(String fileName)
     {
@@ -65,6 +76,16 @@ public class YamlInfoProvider extends MemoryInfoProvider
 		writeYaml();
         fireInfoChanged( changed );
 	}
+
+    @Override
+    public void setFileFilter(List<String> filter) throws Exception
+    {
+        if( !filter.equals( fileFilter ) )
+            return;
+        super.setFileFilter( filter );
+        writeYaml();
+        fireInfoChanged();
+    }
 
 	@Override
     public synchronized List<String> getDataCollections()
