@@ -48,7 +48,9 @@ public class FileTypeRegistryImpl
 
     public FileType getFileTypeByTransformer(String transformerClassName)
     {
-        return byName.values().stream().filter( ft -> ft.getTransformerClassName().equals( transformerClassName ) ).findFirst().orElse( null );
+        if( transformerClassName == null )
+            return FileTypeRegistry.FILE_TYPE_BINARY;
+        return byName.values().stream().filter( ft -> transformerClassName.equals( ft.getTransformerClassName() ) ).findFirst().orElse( null );
     }
 
     public Stream<FileType> fileTypes()
