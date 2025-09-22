@@ -108,6 +108,16 @@ public class Environment
         return classLoading.resolvePluginPath( pluginPath, parentPath );
     }
 
+    public static ClassLoader getClassLoader(Class<?> clazz)
+    {
+        return classLoading.getClassLoader( clazz );
+    }
+
+    public static ClassLoader getClassLoader()
+    {
+        return classLoading.getClassLoader();
+    }
+
 	////////////////////////////////////////////////////////////////////////////
 	// Extension registry
 	//

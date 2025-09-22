@@ -61,4 +61,17 @@ public interface ClassLoading
 
     public PluginEntry resolvePluginPath(String pluginPath, String parentPath);
 
+    /**
+     * Get class loader for class
+     */
+    public default ClassLoader getClassLoader(Class<?> clazz)
+    {
+        return getClassLoader();
+    }
+
+    public default ClassLoader getClassLoader()
+    {
+        return getClass().getClassLoader();
+    }
+
 }
