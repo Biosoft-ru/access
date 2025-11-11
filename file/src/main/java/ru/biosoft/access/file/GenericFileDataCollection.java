@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 
@@ -52,6 +53,9 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
     private FileSystemListener listener;
 
     private FilePatternFilter filter;
+
+    private final Set<String> skipUpdate = ConcurrentHashMap.newKeySet();
+    private final Object lock = new Object();
 	
 	//Constructor used by biouml framework
 	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
@@ -121,6 +125,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
             nameList.remove( modified );
             toReinit.add( modified );
         }
+        toReinit.removeAll( skipUpdate );
         if( toReinit.isEmpty() )
             return;
         nameList = new CopyOnWriteArrayList<String>();
@@ -296,48 +301,53 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
-        File file = null;
-		if(dataElement.getClass().equals( FileDataElement.class ))
-		{
-			FileDataElement fde = (FileDataElement) dataElement;
-			File existing = fde.getFile();
-			file = getChildFile(dataElement.getName());
-			
-			if(!file.equals(existing))
-			{
-				try {
-					Files.createLink(file.toPath(), existing.toPath());
-                }
-                catch (IOException e)
-				{
-					Files.copy(existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);	
-				}
-			}
-        }
-        else if( dataElement instanceof GenericFileDataCollection )
-		{
-			GenericFileDataCollection fdc = (GenericFileDataCollection) dataElement;
-			file = fdc.rootFolder;
-			storeElementProperties(fdc, null);
-		}
-        else
+        synchronized (lock)
         {
-			ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
-			Transformer t = ENV.getTransformerForDataElement(dataElement);
-			if (t == null)
-				throw new UnsupportedOperationException("Can not save element of type " + dataElement.getClass());
-			t.init(this, this);
-			FileDataElement fde = (FileDataElement)t.transformOutput(dataElement); // Transformer will put file into folder
-            Properties properties = null;
-            if( dataElement instanceof PropertiesHolder )
-                properties = ((PropertiesHolder) dataElement).getProperties();
-            else if(dataElement instanceof DataCollection)
-                properties = ((DataCollection) dataElement).getInfo().getProperties();
-            storeElementProperties(fde, t.getClass(), properties);
-			file = fde.getFile();
-		}
-		
-		fileUpdated(file);
+            File file = null;
+            skipUpdate.add( dataElement.getName() );
+            if( dataElement.getClass().equals( FileDataElement.class ) )
+            {
+                FileDataElement fde = (FileDataElement) dataElement;
+                File existing = fde.getFile();
+                file = getChildFile( dataElement.getName() );
+
+                if( !file.equals( existing ) )
+                {
+                    try
+                    {
+                        Files.createLink( file.toPath(), existing.toPath() );
+                    }
+                    catch (IOException e)
+                    {
+                        Files.copy( existing.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING );
+                    }
+                }
+            }
+            else if( dataElement instanceof GenericFileDataCollection )
+            {
+                GenericFileDataCollection fdc = (GenericFileDataCollection) dataElement;
+                file = fdc.rootFolder;
+                storeElementProperties( fdc, null );
+            }
+            else
+            {
+                ru.biosoft.access.file.v1.Environment ENV = ru.biosoft.access.file.v1.Environment.INSTANCE;
+                Transformer t = ENV.getTransformerForDataElement( dataElement );
+                if( t == null )
+                    throw new UnsupportedOperationException( "Can not save element of type " + dataElement.getClass() );
+                t.init( this, this );
+                FileDataElement fde = (FileDataElement) t.transformOutput( dataElement ); // Transformer will put file into folder
+                Properties properties = null;
+                if( dataElement instanceof PropertiesHolder )
+                    properties = ((PropertiesHolder) dataElement).getProperties();
+                else if( dataElement instanceof DataCollection )
+                    properties = ((DataCollection) dataElement).getInfo().getProperties();
+                storeElementProperties( fde, t.getClass(), properties );
+                file = fde.getFile();
+            }
+            skipUpdate.remove( dataElement.getName() );
+            fileUpdated( file );
+        }
     }
 
     public void storeElementProperties(DataElement de, Class<?> transformerClass) throws Exception
