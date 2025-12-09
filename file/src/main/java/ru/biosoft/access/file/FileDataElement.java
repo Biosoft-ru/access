@@ -12,8 +12,10 @@ import com.developmentontheedge.beans.annot.PropertyName;
 import ru.biosoft.access.core.ClassIcon;
 import ru.biosoft.access.core.CloneableDataElement;
 import ru.biosoft.access.core.DataCollection;
+import ru.biosoft.access.core.DataCollectionHelper;
 import ru.biosoft.access.core.DataElement;
 import ru.biosoft.access.core.DataElementSupport;
+import ru.biosoft.access.core.Environment;
 import ru.biosoft.util.TextUtil;
 
 /**
@@ -84,30 +86,14 @@ public class FileDataElement extends DataElementSupport implements CloneableData
         this.file = file;
     }
 
-    /**
-     * @pending 
-     */
     @Override
     public DataElement clone(DataCollection origin, String name) throws CloneNotSupportedException
     {
-        throw new CloneNotSupportedException("Cannot clone FileDataElment " 
-                + origin.getCompletePath() + "/" + name);
-/*
-    FileDataElement result = (FileDataElement)super.clone(origin, name);
-    result.file = DataCollectionUtils.getChildFile(origin, name);
-    if(!result.file.equals(file))
-    {
-        try
-        {
-            ApplicationUtils.linkOrCopyFile(result.file, file, null);
-        }
-        catch( IOException e )
-        {
-            throw new RuntimeException("Cannot copy file "+file+" to "+result.file, e);
-        }
-    }
-    return result;
-*/        
+        DataCollectionHelper helper = Environment.getDataCollectionHelper();
+        if( helper == null )
+            throw new CloneNotSupportedException( "Cannot clone FileDataElement " + origin.getCompletePath() + "/" + name );
+        File newFile = helper.getChildFile( origin, name );
+        return cloneWithFile( origin, name, newFile );
     }
 
     public DataElement cloneWithFile(DataCollection origin, String name, File newFile) throws CloneNotSupportedException
@@ -118,19 +104,7 @@ public class FileDataElement extends DataElementSupport implements CloneableData
         {
             try
             {
-                if( result.file.getAbsolutePath().equals( file.getAbsolutePath() ) )
-                {
-                    return result;
-                }
-                try
-                {
-                    result.file.delete();
-                    Files.createLink( result.file.toPath(), file.toPath() );
-                }
-                catch (Throwable e)
-                {
-                    Files.copy( file.toPath(), result.file.toPath(), StandardCopyOption.REPLACE_EXISTING );
-                }
+                linkOrCopyFile( result.file, file );
             }
             catch (IOException e)
             {
@@ -138,6 +112,23 @@ public class FileDataElement extends DataElementSupport implements CloneableData
             }
         }
         return result;
+    }
+
+    private static void linkOrCopyFile(File dst, File src) throws IOException
+    {
+        if( dst.getAbsolutePath().equals( src.getAbsolutePath() ) )
+        {
+            return;
+        }
+        try
+        {
+            dst.delete();
+            Files.createLink( dst.toPath(), src.toPath() );
+        }
+        catch (Throwable e)
+        {
+            Files.copy( src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING );
+        }
     }
 
 }
