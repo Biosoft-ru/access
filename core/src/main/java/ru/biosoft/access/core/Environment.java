@@ -189,4 +189,19 @@ public class Environment
         else
             return null;
     }
+
+    //////////////////////////////////
+    // Data collection management utils
+    //
+    public static DataCollectionHelper dataCollectionHelper;
+
+    public static void setDataCollectionHelper(DataCollectionHelper dch)
+    {
+        dataCollectionHelper = dch;
+    }
+
+    public static DataCollectionHelper getDataCollectionHelper()
+    {
+        return dataCollectionHelper;
+    }
 }
