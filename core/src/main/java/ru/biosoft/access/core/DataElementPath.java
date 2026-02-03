@@ -734,7 +734,7 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
      * @param name unescaped name
      * @return escaped name
      */
-    public static @Nonnull String escapeName(@Nonnull String name)
+    public static @Nonnull String escapeNameOld(@Nonnull String name)
     {
         char[] result = null;
         int j=0;
@@ -756,12 +756,55 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     }
 
     /**
+     * Escapes special chars in element name - AI rewritten.
+     *
+     * @param name unescaped name
+     * @return escaped name
+     */
+    public static @Nonnull String escapeName(@Nonnull String name) {
+        char[] src = name.toCharArray();
+        int len = src.length;
+
+        // First pass: check if escaping is needed at all, and count how many
+        // special chars there are so we can size the output buffer exactly.
+        int specialCount = 0;
+        for (int i = 0; i < len; i++) {
+            if (src[i] == '\\' || src[i] == '/') specialCount++;
+        }
+
+        // Fast path: nothing to escape — return the original string, zero allocation.
+        if (specialCount == 0) {
+            return name;
+        }
+
+        // Each special char expands to 2 chars (backslash + escape code),
+        // so the output is exactly len + specialCount.
+        char[] result = new char[len + specialCount];
+        int j = 0;
+
+        for (int i = 0; i < len; i++) {
+            char c = src[i];
+            if (c == '/') {
+                result[j++] = '\\';
+                result[j++] = 's';
+            } else if (c == '\\') {
+                result[j++] = '\\';
+                result[j++] = '\\';
+            } else {
+                result[j++] = c;
+            }
+        }
+
+        return new String(result, 0, j);
+    }
+
+    /**
      * Unescapes special chars in element name.
      *
      * @param escapedName escaped name
      * @return unescaped name
      */
-    public static @Nonnull String unescapeName(@Nonnull String escapedName)
+    public static @Nonnull String unescapeNameOld(@Nonnull String escapedName)
     {
         char[] result = null;
         int j=0;
@@ -787,10 +830,45 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
     }
 
     /**
+     * Unescapes special chars in element name - AI rewritten.
+     *
+     * @param escapedName escaped name
+     * @return unescaped name
+     */
+    public static @Nonnull String unescapeName(@Nonnull String escapedName) {
+        // Fast path: find the first backslash index.
+        // If there are none, return the original string immediately — zero allocation.
+        int firstEscape = escapedName.indexOf('\\');
+        if (firstEscape < 0) {
+            return escapedName;
+        }
+
+        // Cache the char array once — avoids repeated charAt() overhead.
+        char[] src = escapedName.toCharArray();
+        // Result can be at most (length - 1) since each '\' eats one char.
+        char[] result = new char[src.length - 1];
+
+        // Bulk-copy everything before the first backslash.
+        System.arraycopy(src, 0, result, 0, firstEscape);
+
+        int j = firstEscape;
+        for (int i = firstEscape; i < src.length; i++) {
+            if (src[i] == '\\' && ++i < src.length) {
+                // 's' is the escape code for '/'
+                result[j++] = src[i] == 's' ? '/' : src[i];
+            } else {
+                result[j++] = src[i];
+            }
+        }
+
+        return new String(result, 0, j);
+    }
+
+    /**
      * Works exactly like Pattern.compile(String.valueOf(delimiter), Pattern.LITERAL).split(string, -1),
      * or like org.apache.commons.lang.StringUtils.splitPreserveAllTokens but faster
      */
-    public static String[] split(String string, char delimiter)
+    public static String[] splitOld(String string, char delimiter)
     {
         int n = 1;
         int i = 0;
@@ -818,6 +896,44 @@ public class DataElementPath implements Comparable<DataElementPath>, Serializabl
             start = i + 1;
         }
         result[n] = string.substring( start );
+        return result;
+    }
+
+    /**
+     * AI - rewritten
+     * Works exactly like Pattern.compile(String.valueOf(delimiter), Pattern.LITERAL).split(string, -1),
+     * or like org.apache.commons.lang.StringUtils.splitPreserveAllTokens but faster
+     */
+
+    public static String[] split(String string, char delimiter) {
+        // Single pass: cache the char array to avoid repeated charAt() overhead.
+        char[] chars = string.toCharArray();
+        int len = chars.length;
+
+        // First pass: count delimiters using raw array scan (no method call overhead).
+        int count = 1;
+        for (int i = 0; i < len; i++) {
+            if (chars[i] == delimiter) count++;
+        }
+
+        // If no delimiter found, return immediately — zero extra allocation.
+        if (count == 1) {
+            return new String[]{string};
+        }
+
+        // Second pass: extract tokens directly into the result array.
+        String[] result = new String[count];
+        int tokenIndex = 0;
+        int start = 0;
+        for (int i = 0; i < len; i++) {
+            if (chars[i] == delimiter) {
+                result[tokenIndex++] = new String(chars, start, i - start);
+                start = i + 1;
+            }
+        }
+        // Last token (after the final delimiter).
+        result[tokenIndex] = new String(chars, start, len - start);
+
         return result;
     }
 }
