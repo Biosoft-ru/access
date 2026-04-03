@@ -56,6 +56,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 
     private final Set<String> skipUpdate = ConcurrentHashMap.newKeySet();
     private final Object lock = new Object();
+
 	
 	//Constructor used by biouml framework
 	public GenericFileDataCollection(DataCollection<?> parent, Properties properties) throws IOException
@@ -164,6 +165,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	{
 		if(YamlInfoProvider.isBioUMLYAML(file))
 			return false;
+        if( skipUpdate.contains( file.getName() ) )
+            return false;
 		boolean recursive = (Boolean) infoProvider.getProperties().getOrDefault("recursie", true);
 		if(recursive && file.isDirectory())
             if( filter.isExcluded( file ) )
@@ -254,7 +257,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	
 
 	@Override
-	public synchronized List<String> getNameList() {
+    public List<String> getNameList()
+    {
 		return nameList;
 	}
 
@@ -301,6 +305,7 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 	@Override
 	protected void doPut(DataElement dataElement, boolean isNew) throws Exception
     {
+        //doPut may conflict with FileSystemWatcher and with YampProvider watcher, element is added to skipUPdate map to avoid update by watchers
         synchronized (lock)
         {
             File file = null;
@@ -345,8 +350,8 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
                 storeElementProperties( fde, t.getClass(), properties );
                 file = fde.getFile();
             }
-            skipUpdate.remove( dataElement.getName() );
             fileUpdated( file );
+            skipUpdate.remove( dataElement.getName() );
         }
     }
 
@@ -590,14 +595,19 @@ public class GenericFileDataCollection extends AbstractDataCollection<DataElemen
 
 	@Override
 	public DataCollection createSubCollection(String name, Class<? extends FolderCollection> clazz) {
-		File folder = new File(rootFolder, name);
+        skipUpdate.add( name );
+        File folder = new File( rootFolder, name );
 		folder.mkdir();
-		fileUpdated(folder);
+        fileUpdated( folder );
 		try {
 			return (DataCollection) get(name);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+        finally
+        {
+            skipUpdate.remove( name );
+        }
 	}
 	
 	public Map<String, Object> getFileInfo(String name)
