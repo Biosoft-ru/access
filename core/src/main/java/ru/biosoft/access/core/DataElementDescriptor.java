@@ -85,7 +85,7 @@ public class DataElementDescriptor
 
     public Map<String, String> cloneProperties()
     {
-        return new HashMap<String, String>( properties );
+        return properties == null ? null : new HashMap<String, String>( properties );
     }
 
 }
