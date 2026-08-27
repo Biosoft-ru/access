@@ -207,17 +207,23 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         prevName = "";
         sorted = true;
 
-        for( String deName : primaryCollection.getNameList() )
+        // Iterate the primary collection instead of calling get(name) for every name:
+        // for a SqlTableDataCollection this fetches rows in batches (one SELECT per
+        // queryLength chunk) rather than one SELECT per row, which is the hot path for
+        // filtering large tables (see FilterTable.justAnalyzeAndPut on the server).
+        for( Iterator<T> it = primaryCollection.iterator(); it.hasNext(); )
         {
             T de;
             try
             {
-                de = primaryCollection.get( deName );
+                de = it.next();
             }
             catch( Exception e )
             {
                 throw ExceptionRegistry.translateException( e );
             }
+            if( de == null )
+                continue;
             curr++;
             if( jobControl != null )
             {
