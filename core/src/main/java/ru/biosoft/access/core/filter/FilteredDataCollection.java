@@ -207,10 +207,10 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         prevName = "";
         sorted = true;
 
-        // Iterate the primary collection instead of calling get(name) for every name:
-        // for a SqlTableDataCollection this fetches rows in batches (one SELECT per
-        // queryLength chunk) rather than one SELECT per row, which is the hot path for
-        // filtering large tables (see FilterTable.justAnalyzeAndPut on the server).
+        // Iterate directly so collections such as SqlTableDataCollection can fetch rows in
+        // batches (one query per chunk) instead of one lookup per name. iterator() yields the
+        // same elements, in the same order, as getNameList()+get(name); its hasNext() performs
+        // no I/O, so any read error is raised by next() and translated below as before.
         for( Iterator<T> it = primaryCollection.iterator(); it.hasNext(); )
         {
             T de;
@@ -222,6 +222,8 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
             {
                 throw ExceptionRegistry.translateException( e );
             }
+            // Some iterators (e.g. SqlTableDataCollection's non-sqlSort path) can yield null
+            // for a missing row, matching the old get(name) contract: skip it, don't deref.
             if( de == null )
                 continue;
             curr++;
