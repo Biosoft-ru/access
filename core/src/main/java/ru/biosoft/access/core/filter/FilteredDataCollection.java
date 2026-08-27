@@ -207,10 +207,13 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         prevName = "";
         sorted = true;
 
-        // Iterate directly so collections such as SqlTableDataCollection can fetch rows in
-        // batches (one query per chunk) instead of one lookup per name. iterator() yields the
-        // same elements, in the same order, as getNameList()+get(name); its hasNext() performs
-        // no I/O, so any read error is raised by next() and translated below as before.
+        // Count the passing rows by iterating the primary collection instead of calling
+        // get(name) for every name: for a SqlTableDataCollection the iterator fetches rows in
+        // batches (one query per chunk) rather than one lookup per name. This pass only computes
+        // the size and the per-chunk index hints; the actual names are materialized lazily by
+        // getChunk() below (which still re-fetches from the primary collection). iterator()
+        // yields the same elements, in the same order, as getNameList()+get(name), and its
+        // hasNext() performs no I/O, so any read error is raised by next() and translated below.
         for( Iterator<T> it = primaryCollection.iterator(); it.hasNext(); )
         {
             T de;
