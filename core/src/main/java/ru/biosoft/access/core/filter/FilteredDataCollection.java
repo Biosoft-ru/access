@@ -207,17 +207,29 @@ public class FilteredDataCollection<T extends DataElement> extends DerivedDataCo
         prevName = "";
         sorted = true;
 
-        for( String deName : primaryCollection.getNameList() )
+        // Count the passing rows by iterating the primary collection instead of calling
+        // get(name) for every name: for a SqlTableDataCollection the iterator fetches rows in
+        // batches (one query per chunk) rather than one lookup per name. This pass only computes
+        // the size and the per-chunk index hints; the actual names are materialized lazily by
+        // getChunk() below (which still re-fetches from the primary collection). For supported
+        // primary collections, iterator() yields the same elements as getNameList()+get(name)
+        // (SqlTableDataCollection's hasNext() only checks iterator state, so any read error is
+        // raised by next() and translated below as before).
+        for( Iterator<T> it = primaryCollection.iterator(); it.hasNext(); )
         {
             T de;
             try
             {
-                de = primaryCollection.get( deName );
+                de = it.next();
             }
             catch( Exception e )
             {
                 throw ExceptionRegistry.translateException( e );
             }
+            // Some iterators (e.g. SqlTableDataCollection's non-sqlSort path) can yield null
+            // for a missing row, matching the old get(name) contract: skip it, don't deref.
+            if( de == null )
+                continue;
             curr++;
             if( jobControl != null )
             {
